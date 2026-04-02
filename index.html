@@ -191,20 +191,32 @@ function altProfile(t){if(t<.03)return t/.03*.05;if(t<.06)return .05+(t-.03)/.03
 function spdProfile(t){if(t<.02)return .10+t/.02*.08;if(t<.06)return .18+(t-.02)/.04*.22;if(t<.10)return .40;if(t<.14)return .40+(t-.10)/.04*.15;if(t<.20)return .55+(t-.14)/.06*.10;if(t<.28)return .65+(t-.20)/.08*.15;if(t<.30)return .80+(t-.28)/.02*.05;if(t<.45)return .85;if(t<.47)return .85-(t-.45)/.02*.08;if(t<.49)return .77+(t-.47)/.02*.11;if(t<.62)return .88;if(t<.65)return .88-(t-.62)/.03*.05;if(t<.72)return .83-(t-.65)/.07*.13;if(t<.78)return .70-(t-.72)/.06*.10;if(t<.82)return .60-(t-.78)/.04*.15;if(t<.86)return .45-(t-.82)/.04*.05;if(t<.90)return .40-(t-.86)/.04*.08;if(t<.94)return .32;if(t<.97)return .32-(t-.94)/.03*.02;return .30-(t-.97)/.03*.05;}
 
 function s3Pos(i){
-  const r=Math.random;
-  const cL=.06,cR=.94,cT=.52,cB=.92,cW=cR-cL,cH=cB-cT;
-  const t=r(),alt=altProfile(t),spd=spdProfile(t);
-  const altY=cB-alt*cH*.90,spdY=cB-spd*cH*.90;
-  const cx=cL+t*cW,ry=cT+r()*(cB-cT);
-  const dA=Math.abs(ry-altY),dS=Math.abs(ry-spdY),lT=cH*.018;
-  let cr,cg,cb,ca;
-  if(dA<lT){cr=20;cg=120;cb=100;ca=.70;}
-  else if(dS<lT){cr=180;cg=100;cb=35;ca=.62;}
-  else if(ry>altY&&ry<cB){const d=(ry-altY)/(cB-altY);cr=40;cg=100;cb=85;ca=d<.25?.20:(d<.6?.12:.06);}
-  else if(ry<altY&&dA<cH*.030){cr=30;cg=115;cb=95;ca=.08;}
-  else if(ry<spdY&&dS<cH*.025){cr=160;cg=90;cb=30;ca=.06;}
-  else{cr=160;cg=155;cb=145;ca=.02;}
-  return{x:cx,y:ry,z:.05,r:cr,g:cg,b:cb,a:ca};
+  var cL=.06,cR=.94,cT=.52,cB=.92,cW=cR-cL,cH=cB-cT;
+  var altCount = Math.floor(N * 0.45);
+  var spdCount = Math.floor(N * 0.45);
+
+  if (i < altCount) {
+    var t = i / altCount;
+    var alt = altProfile(t);
+    var y = cB - alt * cH * 0.90;
+    var x = cL + t * cW;
+    var lane = ((i % 7) - 3) * 0.0025;
+    return {x: x, y: y + lane, z: 0.05, r: 20, g: 120, b: 100, a: 0.70};
+  } else if (i < altCount + spdCount) {
+    var ri = i - altCount;
+    var t = ri / spdCount;
+    var spd = spdProfile(t);
+    var y = cB - spd * cH * 0.90;
+    var x = cL + t * cW;
+    var lane = ((ri % 7) - 3) * 0.0025;
+    return {x: x, y: y + lane, z: 0.05, r: 180, g: 100, b: 35, a: 0.62};
+  } else {
+    var fi = i - altCount - spdCount;
+    var total = N - altCount - spdCount;
+    var t = fi / total;
+    var ry = cT + (Math.sin(fi * 7.31) * 0.5 + 0.5) * (cB - cT);
+    return {x: cL + t * cW, y: ry, z: 0.05, r: 160, g: 155, b: 145, a: 0.04};
+  }
 }
 
 // ═══ THREE.JS SETUP ═══
@@ -284,6 +296,55 @@ for(let i = 0; i < N; i++){
   };
 }
 
+// ═══ LEADER / FOLLOWER BOIDS ═══
+// ~400 "leader" particles run full boids (separation, alignment, cohesion).
+// All other particles follow their nearest leader with slight delay.
+// Leaders create the murmuration shape; followers create the density.
+var NUM_BIRDS = 2000;  // visible "birds" in flock mode
+var birdIds = [];
+var birdX = new Float32Array(NUM_BIRDS);
+var birdY = new Float32Array(NUM_BIRDS);
+var birdZ = new Float32Array(NUM_BIRDS);  // depth for 3D effect
+var birdVX = new Float32Array(NUM_BIRDS);
+var birdVY = new Float32Array(NUM_BIRDS);
+var birdVZ = new Float32Array(NUM_BIRDS);
+
+// Sub-groups: 10 formations that make up the murmuration
+var NUM_GROUPS = 10;
+var groups = [];
+for (var gi = 0; gi < NUM_GROUPS; gi++) {
+  groups.push({
+    // Each group wanders on its own noise path
+    sx1: gi * 13.7 + 5.1, sy1: gi * 7.3 + 11.9,
+    sx2: gi * 4.9 + 29.3, sy2: gi * 9.1 + 3.7,
+    sz1: gi * 6.3 + 17.1, sz2: gi * 8.7 + 7.3,
+    speed: 0.08 + gi * 0.012,        // slightly different speeds
+    range: 0.04 + (gi % 3) * 0.02,   // how far from centroid
+    zRange: 0.15 + (gi % 4) * 0.05,  // depth range
+    zBase: 0.2 + gi * 0.06,          // base depth layer
+  });
+}
+
+// Pick birds evenly from the particle pool
+var birdStep = Math.floor(N / NUM_BIRDS);
+for (var bi = 0; bi < NUM_BIRDS; bi++) {
+  birdIds.push(bi * birdStep);
+  birdZ[bi] = 0.2 + Math.random() * 0.6;
+}
+
+// Assign birds to sub-groups (roughly even distribution)
+var birdGroup = new Int32Array(NUM_BIRDS);
+for (var bi = 0; bi < NUM_BIRDS; bi++) {
+  birdGroup[bi] = bi % NUM_GROUPS;
+}
+
+// Assign each particle to a bird
+for (var i = 0; i < N; i++) {
+  pData[i].bird = Math.floor(i / birdStep);
+  if (pData[i].bird >= NUM_BIRDS) pData[i].bird = NUM_BIRDS - 1;
+  pData[i].isBird = (i % birdStep === 0) && (Math.floor(i / birdStep) < NUM_BIRDS);
+}
+
 // ═══ COVER TRANSFORM ═══
 function coverXY(col, row){
   var vw = W || 1, vh = H || 1;
@@ -340,69 +401,104 @@ function getDesire(pd, i, scrollT, time) {
   // 0.94-1.00: scene 3
 
   var tx, ty, cr, cg, cb, ca;
-  var mode = 'scene'; // 'scene' or 'flock'
-  var flockStrength = 0; // 0 = fully at scene, 1 = fully in flock
+  var mode = 'scene';
+  var flockStrength = 0;
+
+  // Sub-flock attractor position (computed per-particle in animate loop)
+  // getDesire just returns the main centroid; sub-flock offset applied in physics
+  var spreadX = 0;
+  var spreadY = 0;
 
   if (scrollT < 0.08) {
+    // Scene 1 settled
     tx=s1.x; ty=s1.y; cr=s1.r; cg=s1.g; cb=s1.b; ca=s1.a;
   } else if (scrollT < 0.20) {
-    // Staggered peel-off from scene 1 (gradual)
+    // Peel off from scene 1
     var raw = (scrollT - 0.08) / 0.12;
-    var myT = Math.max(0, Math.min(1, (raw - fo * 0.35) / 0.65));
-    myT = myT * myT * (3 - 2 * myT);
-    tx = s1.x; ty = s1.y;
-    cr=s1.r; cg=s1.g; cb=s1.b; ca=s1.a;
+    var myT = Math.max(0, Math.min(1, (raw - fo * 0.3) / 0.7));
+    myT = smoothstep(myT);
+    // Blend from scene position toward flock centroid
+    var cx = 0.5 + Math.sin(myT * 0.5) * 0.1;
+    var cy = 0.35 + myT * 0.1;
+    tx = lerp(s1.x, cx + spreadX, myT);
+    ty = lerp(s1.y, cy + spreadY, myT);
+    cr = s1.r; cg = s1.g; cb = s1.b; ca = s1.a;
     flockStrength = myT;
   } else if (scrollT < 0.36) {
-    // Full flock mode — attractor moves
+    // Flock flying — centroid arcs from scene1 area to scene2 area
     var lt = (scrollT - 0.20) / 0.16;
-    // Attractor follows curved path
-    tx = 0.5 + Math.sin(lt * Math.PI * 1.2) * 0.2;
-    ty = 0.25 + lt * 0.5;
-    cr = lerp(s1.r, c2.r, lt); cg = lerp(s1.g, c2.g, lt);
-    cb = lerp(s1.b, c2.b, lt); ca = 0.55;
+    var slt = smoothstep(lt);
+    var cx = 0.5 + Math.sin(lt * Math.PI) * 0.12;
+    var cy = lerp(0.45, 0.55, slt);
+    tx = cx + spreadX;
+    ty = cy + spreadY;
+    cr = lerp(s1.r, c2.r, slt); cg = lerp(s1.g, c2.g, slt);
+    cb = lerp(s1.b, c2.b, slt); ca = lerp(s1.a, c2.a, slt);
     mode = 'flock';
     flockStrength = 1;
   } else if (scrollT < 0.50) {
-    // Staggered settle into scene 2 (gradual)
+    // Settle into scene 2
     var raw = (scrollT - 0.36) / 0.14;
-    var myT = Math.max(0, Math.min(1, (raw - fo * 0.35) / 0.65));
-    myT = myT * myT * (3 - 2 * myT);
-    tx = s2x; ty = s2y;
-    cr=c2.r; cg=c2.g; cb=c2.b; ca=c2.a;
+    var myT = Math.max(0, Math.min(1, (raw - fo * 0.3) / 0.7));
+    myT = smoothstep(myT);
+    var cx = 0.5 + spreadX;
+    var cy = 0.55 + spreadY;
+    tx = lerp(cx, s2x, myT);
+    ty = lerp(cy, s2y, myT);
+    cr = c2.r; cg = c2.g; cb = c2.b; ca = c2.a;
     flockStrength = 1 - myT;
   } else if (scrollT < 0.56) {
+    // Scene 2 settled
     tx=s2x; ty=s2y; cr=c2.r; cg=c2.g; cb=c2.b; ca=c2.a;
   } else if (scrollT < 0.68) {
+    // Peel off from scene 2
     var raw = (scrollT - 0.56) / 0.12;
-    var myT = Math.max(0, Math.min(1, (raw - fo * 0.35) / 0.65));
-    myT = myT * myT * (3 - 2 * myT);
-    tx = s2x; ty = s2y;
-    cr=c2.r; cg=c2.g; cb=c2.b; ca=c2.a;
+    var myT = Math.max(0, Math.min(1, (raw - fo * 0.3) / 0.7));
+    myT = smoothstep(myT);
+    var cx = 0.5 + Math.sin(myT * 0.5) * 0.1;
+    var cy = 0.5 + myT * 0.1;
+    tx = lerp(s2x, cx + spreadX, myT);
+    ty = lerp(s2y, cy + spreadY, myT);
+    cr = c2.r; cg = c2.g; cb = c2.b; ca = c2.a;
     flockStrength = myT;
   } else if (scrollT < 0.82) {
+    // Flock flying — centroid arcs toward scene 3
     var lt = (scrollT - 0.68) / 0.14;
-    tx = 0.5 + Math.cos(lt * Math.PI) * 0.15;
-    ty = 0.4 + lt * 0.3;
-    cr = lerp(c2.r, s3.r, lt); cg = lerp(c2.g, s3.g, lt);
-    cb = lerp(c2.b, s3.b, lt); ca = 0.55;
+    var slt = smoothstep(lt);
+    var cx = 0.5 + Math.sin(lt * Math.PI) * 0.10;
+    var cy = lerp(0.55, 0.72, slt);
+    tx = cx + spreadX;
+    ty = cy + spreadY;
+    cr = lerp(c2.r, s3.r, slt); cg = lerp(c2.g, s3.g, slt);
+    cb = lerp(c2.b, s3.b, slt); ca = lerp(c2.a, s3.a, slt);
     mode = 'flock';
     flockStrength = 1;
   } else if (scrollT < 0.94) {
+    // Settle into scene 3 — low flightOrder settles first (left side of graph)
     var raw = (scrollT - 0.82) / 0.12;
-    var myT = Math.max(0, Math.min(1, (raw - fo * 0.35) / 0.65));
-    myT = myT * myT * (3 - 2 * myT);
-    tx = s3.x; ty = s3.y;
-    cr=s3.r; cg=s3.g; cb=s3.b; ca=s3.a;
+    var myT = Math.max(0, Math.min(1, (raw - (1 - fo) * 0.4) / 0.6));
+    myT = smoothstep(myT);
+    var cx = 0.5 + spreadX;
+    var cy = 0.72 + spreadY;
+    tx = lerp(cx, s3.x, myT);
+    ty = lerp(cy, s3.y, myT);
+    cr = s3.r; cg = s3.g; cb = s3.b; ca = s3.a;
     flockStrength = 1 - myT;
   } else {
+    // Scene 3 settled
     tx=s3.x; ty=s3.y; cr=s3.r; cg=s3.g; cb=s3.b; ca=s3.a;
   }
 
-  // Content dimming
+  // During transitions, lift alpha so particles don't vanish
+  // (background particles have ca=0.03 in scene mode — can't keep that during flock)
+  if (flockStrength > 0) {
+    ca = Math.max(ca, 0.25 * flockStrength);
+  }
+
+  // Content dimming (softened)
   var dim = 1;
-  if (scrollT > 0.22 && scrollT < 0.34) { dim = 0.12 + 0.88 * Math.min(1, Math.abs(scrollT - 0.28) / 0.06); }
-  else if (scrollT > 0.70 && scrollT < 0.80) { dim = 0.12 + 0.88 * Math.min(1, Math.abs(scrollT - 0.75) / 0.05); }
+  if (scrollT > 0.22 && scrollT < 0.34) { dim = 0.65 + 0.35 * Math.min(1, Math.abs(scrollT - 0.28) / 0.06); }
+  else if (scrollT > 0.70 && scrollT < 0.80) { dim = 0.65 + 0.35 * Math.min(1, Math.abs(scrollT - 0.75) / 0.05); }
   ca *= dim;
 
   return { tx:tx, ty:ty, r:cr/255, g:cg/255, b:cb/255, a:ca, flockStrength:flockStrength, mode:mode };
@@ -443,7 +539,7 @@ function animate() {
   var now = performance.now();
   var dt = Math.min((now - lastFrame) / 1000, 0.05); // cap at 50ms
   lastFrame = now;
-  time += dt * 0.03; // quarter speed
+  time += dt * 0.08; // slow, graceful
   var scrollT = getScrollT();
   var scrollLerp = 1 - Math.pow(0.92, dt * 60); // framerate-independent smoothing
   scrollVel = lerp(scrollVel, (scrollT - prevScrollT) / Math.max(dt, 0.001), scrollLerp);
@@ -458,6 +554,136 @@ function animate() {
   var gridPx = Math.max(W, H) / (CC - 1);
   var cockpitSize = gridPx;
 
+  // === BOIDS UPDATE ON BIRDS ===
+  // Sync bird state from particle arrays
+  for (var bi = 0; bi < NUM_BIRDS; bi++) {
+    var pi = birdIds[bi];
+    birdX[bi] = curX[pi];
+    birdY[bi] = curY[pi];
+    birdVX[bi] = velX[pi];
+    birdVY[bi] = velY[pi];
+  }
+
+  var bd = getDesire(pData[birdIds[0]], birdIds[0], scrollT, time);
+  var birdFS = bd.flockStrength;
+
+  if (birdFS > 0.2) {
+    // --- Compute sub-group attractor positions ---
+    var groupX = new Float32Array(NUM_GROUPS);
+    var groupY = new Float32Array(NUM_GROUPS);
+    var groupZ = new Float32Array(NUM_GROUPS);
+    for (var gi = 0; gi < NUM_GROUPS; gi++) {
+      var g = groups[gi];
+      var t = time;
+      // Two noise layers per axis → unpredictable, non-circular paths
+      groupX[gi] = bd.tx + (snoise(g.sx1 + t * g.speed, g.sy1) - 0.5) * g.range * 2
+                         + (snoise(g.sx2 + t * g.speed * 1.6, g.sy2) - 0.5) * g.range;
+      groupY[gi] = bd.ty + (snoise(g.sy1 + t * g.speed * 0.7, g.sx1) - 0.5) * g.range * 2
+                         + (snoise(g.sy2 + t * g.speed * 1.3, g.sx2) - 0.5) * g.range;
+      groupZ[gi] = g.zBase + (snoise(g.sz1 + t * g.speed * 0.5, g.sz2) - 0.5) * g.zRange;
+      groupZ[gi] = Math.max(0.05, Math.min(0.95, groupZ[gi]));
+    }
+
+    // --- Spatial grid for neighbor lookup ---
+    var cohDist = 0.06;
+    var gridSize = cohDist;
+    var grid = {};
+    for (var bi = 0; bi < NUM_BIRDS; bi++) {
+      var gx = Math.floor(birdX[bi] / gridSize);
+      var gy = Math.floor(birdY[bi] / gridSize);
+      var key = gx + ',' + gy;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(bi);
+    }
+
+    for (var bi = 0; bi < NUM_BIRDS; bi++) {
+      var bx = birdX[bi], by = birdY[bi], bz = birdZ[bi];
+      var bvx = birdVX[bi], bvy = birdVY[bi];
+      var myGroup = birdGroup[bi];
+      var gx = Math.floor(bx / gridSize);
+      var gy = Math.floor(by / gridSize);
+
+      var sepFx = 0, sepFy = 0;
+      var aliVx = 0, aliVy = 0, aliCount = 0;
+      var cohPx = 0, cohPy = 0, cohCount = 0;
+
+      // Check 3x3 neighboring cells
+      for (var cx = gx - 1; cx <= gx + 1; cx++) {
+        for (var cy = gy - 1; cy <= gy + 1; cy++) {
+          var cell = grid[cx + ',' + cy];
+          if (!cell) continue;
+          for (var ci = 0; ci < cell.length; ci++) {
+            var bj = cell[ci];
+            if (bi === bj) continue;
+            var ddx = birdX[bj] - bx, ddy = birdY[bj] - by;
+            var dd = Math.sqrt(ddx*ddx + ddy*ddy);
+            if (dd < 0.0005 || dd > cohDist) continue;
+
+            // Same group = stronger interaction, cross-group = weaker
+            var sameGroup = (birdGroup[bj] === myGroup);
+            var groupMul = sameGroup ? 1.0 : 0.3;
+            var t = dd / cohDist;
+
+            // Separation (very close only)
+            if (dd < 0.008) {
+              var sw = (1 - dd / 0.008);
+              sw = sw * sw * groupMul;
+              sepFx -= (ddx / dd) * sw;
+              sepFy -= (ddy / dd) * sw;
+            }
+            // Alignment — match velocity with nearby same-group birds
+            if (sameGroup && dd < 0.04) {
+              var aw = 0.5 + 0.5 * Math.cos(t * 2.5 * Math.PI);
+              if (aw < 0) aw = 0;
+              aliVx += birdVX[bj] * aw;
+              aliVy += birdVY[bj] * aw;
+              aliCount += aw;
+            }
+            // Cohesion — toward same-group neighbors
+            if (sameGroup) {
+              var cw = 0.5 + 0.5 * Math.cos(t * Math.PI);
+              cohPx += birdX[bj] * cw;
+              cohPy += birdY[bj] * cw;
+              cohCount += cw;
+            }
+          }
+        }
+      }
+
+      var pi = birdIds[bi];
+
+      // Separation (gentle)
+      velX[pi] += sepFx * 0.0008;
+      velY[pi] += sepFy * 0.0008;
+
+      // Alignment (smooth velocity matching)
+      if (aliCount > 0.01) {
+        velX[pi] += (aliVx / aliCount - bvx) * 0.008;
+        velY[pi] += (aliVy / aliCount - bvy) * 0.008;
+      }
+
+      // Cohesion toward same-group neighbors
+      if (cohCount > 0.01) {
+        velX[pi] += (cohPx / cohCount - bx) * 0.004;
+        velY[pi] += (cohPy / cohCount - by) * 0.004;
+      }
+
+      // Sub-group attractor — each group wanders independently
+      var ga = groups[myGroup];
+      velX[pi] += (groupX[myGroup] - bx) * 0.003;
+      velY[pi] += (groupY[myGroup] - by) * 0.003;
+
+      // Global centroid — gentle pull keeps whole murmuration together
+      velX[pi] += (bd.tx - bx) * 0.002;
+      velY[pi] += (bd.ty - by) * 0.002;
+
+      // Z-depth: drift toward group's depth layer
+      birdZ[bi] += (groupZ[myGroup] - bz) * 0.02;
+      birdZ[bi] += (snoise(bi * 3.7 + time * 0.05, bi * 1.3) - 0.5) * 0.002;
+      birdZ[bi] = Math.max(0.05, Math.min(0.95, birdZ[bi]));
+    }
+  }
+
   for (var i = 0; i < N; i++) {
     var pd = pData[i];
     var d = getDesire(pd, i, scrollT, time);
@@ -471,85 +697,41 @@ function animate() {
     var dy = d.ty - curY[i];
     var dl = pd.depthLayer; // 0=far, 1=near
 
-    // Multi-scale curl noise: shape constantly morphs
-    var noiseT = time * 0.04;
-    // Large swirls (shape envelope)
-    var c1 = curl2d(
-      curX[i] * 1.2 + noiseT * 0.3 + pd.noiseX * 0.01,
-      curY[i] * 1.2 + noiseT * 0.2 + pd.noiseY * 0.01
-    );
-    // Medium swirls (internal structure)
-    var c2 = curl2d(
-      curX[i] * 3.0 + noiseT * 0.7 + pd.noiseY * 0.005,
-      curY[i] * 3.0 - noiseT * 0.5 + pd.noiseX * 0.005
-    );
-    // Per-particle variation (prevents uniform layers)
-    var c3 = curl2d(
-      curX[i] * 6.0 + noiseT * 1.2 + pd.flightOrder * 5.0,
-      curY[i] * 6.0 - noiseT * 0.8 + pd.flightOrder * 3.0
-    );
-    var c = {
-      x: c1.x * 0.6 + c2.x * 0.3 + c3.x * 0.1,
-      y: c1.y * 0.6 + c2.y * 0.3 + c3.y * 0.1,
-    };
+    // === PARTICLE PHYSICS ===
+    var dl = pd.depthLayer;
+    var fo = pd.flightOrder;
+    var isBird = pd.isBird;
+    var myBird = pd.bird;
 
-    // Depth affects attraction: near particles track attractor tightly,
-    // far particles lag behind (creates depth parallax)
-    var depthLag = 0.85 + dl * 0.15; // less depth separation
-
-    // Scene vs flock forces
-    var sceneAttr = 0.10 * (1 - fs);  // gentle, no overshoot
-    var flockAttr = 0.012 * fs * depthLag;
-    var curlStr = 0.0025 * fs * (1.0 + (1-dl) * 0.3); // far particles curl more
-
-    var force = (sceneAttr + flockAttr) * dt60;
-    velX[i] += dx * force;
-    velY[i] += dy * force;
-    if (!isNaN(c.x)) velX[i] += c.x * curlStr * dt60;
-    if (!isNaN(c.y)) velY[i] += c.y * curlStr * dt60;
-    if (isNaN(velX[i])) velX[i] = 0;
-    if (isNaN(velY[i])) velY[i] = 0;
-
-    // Scroll velocity: strong inertial effect
-    // Fast scroll = swarm accelerates, tail stretches
-    // Deceleration = front compresses, tail catches up
-    if (fs > 0.3) {
-      var absVel = Math.abs(scrollVel);
-      var scrollDir = scrollVel > 0 ? 1 : -1;
-      
-      // Main drag force: scroll speed squared, strong effect
-      var dragForce = Math.min(absVel * absVel * 5.0, 1.5) * fs;
-      
-      // Depth-based inertia: far particles (light) respond slower = longer tail
-      var inertia = 0.3 + (1 - dl) * 0.7; // far=1.0 (heavy lag), near=0.3 (quick)
-      
-      // Apply: near particles keep up, far ones trail behind
-      velY[i] += scrollDir * dragForce * (1.0 - inertia * 0.6) * 0.015 * dt60;
-      
-      // Lateral spread on acceleration (flock fans out)
-      var lateralSpread = absVel * 0.5 * fs;
-      velX[i] += (pd.flightOrder - 0.5) * lateralSpread * 0.008 * dt60;
-      
-      // Compression on deceleration: particles bunch toward attractor
-      // (scrollVel approaching zero from high = deceleration)
-    }
-
-    // Speed limits in flock (scaled by dt for framerate independence)
-    if (fs > 0.5) {
-      var spd = Math.sqrt(velX[i]*velX[i] + velY[i]*velY[i]);
-      var minSpd = (0.0003 + dl * 0.0002) * dt60;
-      var maxSpd = (0.005 + dl * 0.003) * dt60;
-      if (spd > 0 && spd < minSpd) {
-        velX[i] = velX[i] / spd * minSpd;
-        velY[i] = velY[i] / spd * minSpd;
-      } else if (spd > maxSpd) {
-        velX[i] = velX[i] / spd * maxSpd;
-        velY[i] = velY[i] / spd * maxSpd;
+    if (fs < 0.01) {
+      // Scene mode: spring to scene target
+      velX[i] += dx * 0.15;
+      velY[i] += dy * 0.15;
+    } else if (isBird) {
+      // Bird particles: boids forces already applied above
+      // Just add scene-target blending during transitions
+      if (fs < 1) {
+        velX[i] += dx * 0.10 * (1 - fs);
+        velY[i] += dy * 0.10 * (1 - fs);
       }
+    } else {
+      // Follower: merge toward assigned bird
+      var bx = birdX[myBird], by = birdY[myBird];
+      var targetX = lerp(d.tx, bx, fs);
+      var targetY = lerp(d.ty, by, fs);
+      var fdx = targetX - curX[i];
+      var fdy = targetY - curY[i];
+      // Spring toward bird (followers converge, effectively "merging")
+      velX[i] += fdx * 0.08;
+      velY[i] += fdy * 0.08;
     }
 
-    // Damping: depth-dependent (far particles = more drag = longer trails)
-    var damp = fs > 0.5 ? 0.97 : 0.75;
+    // NaN safety
+    if (isNaN(velX[i]) || !isFinite(velX[i])) velX[i] = 0;
+    if (isNaN(velY[i]) || !isFinite(velY[i])) velY[i] = 0;
+
+    // === DAMPING + INTEGRATION ===
+    var damp = fs > 0.3 ? 0.88 : 0.65;
     var dampDt = Math.pow(damp, dt60);
     velX[i] *= dampDt;
     velY[i] *= dampDt;
@@ -568,27 +750,45 @@ function animate() {
     posArr[ci+1] = oy;
     posArr[ci+2] = 0;
 
-    colArr[ci] = d.r;
-    colArr[ci+1] = d.g;
-    colArr[ci+2] = d.b;
+    // Colors: scene colors when settled, dark silhouettes when flocking
+    if (fs < 0.1 || !pd.isBird) {
+      colArr[ci] = d.r;
+      colArr[ci+1] = d.g;
+      colArr[ci+2] = d.b;
+    } else {
+      // Birds in flock: dark grey/charcoal, depth-varied
+      var z = birdZ[pd.bird];
+      var shade = lerp(0.15, 0.35, z);  // near=darker, far=lighter
+      colArr[ci] = lerp(d.r, shade, fs);
+      colArr[ci+1] = lerp(d.g, shade, fs);
+      colArr[ci+2] = lerp(d.b, shade, fs);
+    }
 
-    // Size: depth-based in flock (near=big, far=small), grid in scene
+    // Size: pixel-grid for scenes, merge into bigger "birds" for flock
     var spd2 = Math.sqrt(velX[i]*velX[i] + velY[i]*velY[i]);
     var dl2 = pd.depthLayer;
-    var sz;
-    if (fs < 0.2) {
-      sz = cockpitSize;
+    var basePx = cockpitSize;
+    // In flock: birds are small specks, depth-varied. Followers vanish.
+    if (pd.isBird && fs > 0.1) {
+      var z = birdZ[pd.bird];
+      var flockSz = 1.5 + z * 2.5;  // near=4px, far=1.5px — small specks
+      sizeArr[i] = lerp(basePx, flockSz, fs);
     } else {
-      // Flock: near particles bigger, far smaller. Speed shrinks further.
-      var flockSz = (0.6 + dl2 * 2.0) * Math.max(0.4, 1.0 - spd2 * 50);
-      sz = fs > 0.8 ? flockSz : lerp(cockpitSize, flockSz, fs);
+      sizeArr[i] = basePx * (1 - fs);  // followers shrink to 0
     }
-    sizeArr[i] = sz;
 
-    // Alpha: near=opaque, far=transparent when flocking
-    var flockAlpha = 0.3 + dl2 * 0.6; // near=0.9, far=0.3
+    // Alpha: birds visible in flock, followers fade out (merged)
     var sceneAlpha = d.a;
-    alphaArr[i] = lerp(sceneAlpha, flockAlpha, fs) * 0.85;
+    if (fs < 0.01) {
+      alphaArr[i] = sceneAlpha;
+    } else if (pd.isBird) {
+      // Bird: dark specks, near ones more opaque
+      var birdAlpha = 0.5 + birdZ[pd.bird] * 0.4;
+      alphaArr[i] = lerp(sceneAlpha, birdAlpha, fs);
+    } else {
+      // Follower: fade out as they merge into birds
+      alphaArr[i] = sceneAlpha * (1 - fs * 0.95);
+    }
   }
 
   geo.attributes.position.needsUpdate = true;
@@ -609,6 +809,38 @@ function updateParallax(){
   });
   requestAnimationFrame(updateParallax);
 }
+
+// ═══ DEBUG OVERLAY ═══
+var dbg = document.createElement('div');
+dbg.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;background:rgba(0,0,0,0.8);color:#0f0;font:11px monospace;padding:8px;pointer-events:none;max-width:280px;';
+document.body.appendChild(dbg);
+setInterval(function(){
+  var st = getScrollT();
+  var pd0 = pData[0];
+  var d0 = getDesire(pd0, 0, st, time);
+  var minX=99,maxX=-99,minY=99,maxY=-99;
+  var avgA=0,avgSz=0,cnt=0;
+  var posA = geo.attributes.position.array;
+  for(var k=0;k<N;k+=200){
+    var px=posA[k*3], py=posA[k*3+1];
+    if(px<minX)minX=px; if(px>maxX)maxX=px;
+    if(py<minY)minY=py; if(py>maxY)maxY=py;
+    avgA += alphas[k];
+    avgSz += sizes[k];
+    cnt++;
+  }
+  avgA/=cnt; avgSz/=cnt;
+  var aspect = W/H;
+  dbg.innerHTML = 'scrollT: '+st.toFixed(3)
+    +'<br>fs: '+d0.flockStrength.toFixed(3)
+    +'<br>target: '+d0.tx.toFixed(3)+','+d0.ty.toFixed(3)
+    +'<br>screenX: ['+minX.toFixed(2)+' .. '+maxX.toFixed(2)+'] cam:±'+aspect.toFixed(2)
+    +'<br>screenY: ['+minY.toFixed(2)+' .. '+maxY.toFixed(2)+'] cam:±1'
+    +'<br>avgAlpha: '+avgA.toFixed(3)
+    +'<br>avgSize: '+avgSz.toFixed(2)
+    +'<br>vel[0]: '+velX[0].toFixed(5)+','+velY[0].toFixed(5)
+    +'<br>cur[0]: '+curX[0].toFixed(3)+','+curY[0].toFixed(3);
+}, 100);
 
 // ═══ EVENTS ═══
 window.addEventListener('resize', resize);
