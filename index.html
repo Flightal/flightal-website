@@ -121,17 +121,15 @@ var ROUTE_COUNT = N - GRID_COUNT;       // ~5000 route particles
 
 function s1Pos(i) {
   if (i < GRID_COUNT) {
-    // ── BOTTOM LAYER: image-sampled grid ──
-    // Map grid index to image pixel
     var gridRatio = i / GRID_COUNT;
     var imgIdx = Math.min(Math.floor(gridRatio * CC * CR), CC * CR - 1);
     var col = imgIdx % CC, row = Math.floor(imgIdx / CC);
     var pi = (row * CC + col) * 3;
     var r = chartRGB[pi] || 230, g = chartRGB[pi+1] || 228, b = chartRGB[pi+2] || 222;
     var lum = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+    var sat = Math.max(r,g,b) - Math.min(r,g,b);
     
-    // Background detection
-    var isBackground = lum > 0.92 && (Math.max(r,g,b) - Math.min(r,g,b)) < 20;
+    var isBackground = lum > 0.92 && sat < 20;
     var isLightFill = g > r && g > b && lum > 0.75;
     
     var alpha;
@@ -139,37 +137,48 @@ function s1Pos(i) {
     else if (isLightFill) alpha = 0.12;
     else alpha = 0.4 + (1 - lum) * 0.55;
     
-    // Cover transform (same as cockpit - fills viewport without squishing)
+    // Terrain height: derive from color
+    // Green-tinted = low terrain, dark/saturated = features/terrain, bright = water/background
+    var terrainH = 0;
+    if (isBackground) {
+      terrainH = 0;  // flat background
+    } else if (isLightFill) {
+      terrainH = 0.05;  // low terrain (green fills)
+    } else {
+      // Darker = higher features. Saturated colors = interesting terrain.
+      terrainH = (1 - lum) * 0.3 + (sat / 255) * 0.15;
+    }
+    
     var cvr = coverXY(col, row);
     return {
-      x: cvr.x,
-      y: cvr.y,
+      x: cvr.x, y: cvr.y,
       z: 0.05 + (1 - lum) * 0.4,
-      r: r, g: g, b: b,
-      a: alpha,
+      terrainH: terrainH,
+      r: r, g: g, b: b, a: alpha,
     };
     
   } else {
-    // ── TOP LAYER: free-positioned magenta route ──
+    // Route: positioned along path with altitude profile height
     var ri = i - GRID_COUNT;
     var t = ri / ROUTE_COUNT;
     var sg = ROUTE.length - 1;
     var sf = t * sg, si = Math.min(Math.floor(sf), sg - 1), st = sf - si;
     var f = ROUTE[si], to = ROUTE[si + 1];
-    
-    // Perpendicular offset for thickness (5 lanes)
     var ddx = to.x - f.x, ddy = to.y - f.y;
     var len = Math.sqrt(ddx*ddx + ddy*ddy);
     if (len < 0.001) len = 0.001;
     var nx = -ddy/len, ny = ddx/len;
     var lane = (ri % 5 - 2) * 0.0018;
     
+    // Route height follows altitude profile
+    var routeAlt = altProfile(t) * 0.8 + 0.1;  // 0.1 to 0.9
+    
     return {
       x: f.x + ddx * st + nx * lane,
       y: f.y + ddy * st + ny * lane,
       z: 0.90,
-      r: 220, g: 0, b: 180,
-      a: 0.95,
+      terrainH: routeAlt,  // flight altitude
+      r: 220, g: 0, b: 180, a: 0.95,
     };
   }
 }
@@ -399,14 +408,22 @@ for (var i = 0; i < N; i++) {
 
 // ═══ SCENE TARGET (scroll-driven centroid in world space) ═══
 function getFlockState(scrollT) {
-  // Returns: flockStrength (0=scene, 1=flock), centroid XYZ, scene index
-  var fs, cx, cy, cz, sceneFrom, sceneTo, sceneT;
+  var fs, cx, cy, cz;
+
+  // Scene 1 has two sub-phases: flat map, then 3D tilt
+  // tiltT: 0 = top-down, 1 = fully tilted
+  var tiltT = 0;
+  if (scrollT >= 0.03 && scrollT < 0.08) {
+    tiltT = smoothstep((scrollT - 0.03) / 0.05);
+  } else if (scrollT >= 0.08) {
+    tiltT = 1;
+  }
 
   if (scrollT < 0.08) {
-    return {fs: 0, scene: 1};
+    return {fs: 0, scene: 1, tilt: tiltT};
   } else if (scrollT < 0.20) {
     fs = smoothstep((scrollT - 0.08) / 0.12);
-    return {fs: fs, scene: 1, cx: 0, cy: 0, cz: 0};
+    return {fs: fs, scene: 1, tilt: 1, cx: 0, cy: 0, cz: 0};
   } else if (scrollT < 0.36) {
     var t = (scrollT - 0.20) / 0.16;
     return {fs: 1, cx: Math.sin(t * Math.PI) * 30, cy: -20 + t * 40, cz: -50 + t * 50};
@@ -611,6 +628,25 @@ function animate() {
 
   var state = getFlockState(scrollT);
   var fs = state.fs || 0;
+  var tiltT = state.tilt || 0;
+
+  // Camera: blend between top-down and perspective view
+  // Top-down: camera at (0, 500, 0) looking at (0, 0, 0) — straight down
+  // Tilted:   camera at (0, 200, 400) looking at (0, 0, 0) — ~60° angle
+  // Flock:    camera at (0, 0, 500) looking at (0, 0, 0) — straight on
+  var camTilt = tiltT;
+  if (fs > 0) camTilt = 1;  // keep tilted during transition
+
+  // During full flock, swing to front view
+  var flockCamT = 0;
+  if (fs > 0.5) flockCamT = smoothstep((fs - 0.5) * 2);
+
+  var camX = 0;
+  var camY = lerp(500, lerp(200, 0, flockCamT), camTilt);
+  var camZ = lerp(0, lerp(400, 500, flockCamT), camTilt);
+  camera.position.set(camX, camY, camZ);
+  camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
 
   // Update boids when in flock mode
   if (fs > 0.1) {
@@ -634,7 +670,7 @@ function animate() {
   // Scene data
   var sceneIdx = state.scene || 1;
 
-  var gridPx = Math.max(W, H) / (CC - 1) * 2.5;
+  var gridPx = Math.max(W, H) / (CC - 1) * 0.75;
 
   for (var i = 0; i < N; i++) {
     var pd = pData[i];
@@ -643,23 +679,41 @@ function animate() {
 
     // Scene position in world space
     var sx, sy, sz, sr, sg, sb, sa;
+    sz = 0;
     if (sceneIdx === 1) {
       var s = pd.s1;
-      sx = s.x; sy = s.y; sz = 0; sr = s.r; sg = s.g; sb = s.b; sa = s.a;
-      // Route layer slightly forward
-      if (i >= GRID_COUNT) sz = 8;
+      sx = s.x; sy = s.y; sr = s.r; sg = s.g; sb = s.b; sa = s.a;
+      // terrainH is the 3D height — apply based on camera tilt
+      // When top-down (tilt=0): all flat. When tilted: terrain rises.
+      sz = 0;  // will be converted to world Y (up) below
     } else if (sceneIdx === 2) {
       var cv = coverXY(pd.s2.col, pd.s2.row);
-      sx = cv.x; sy = cv.y; sz = 0; sr = pd.s2.r; sg = pd.s2.g; sb = pd.s2.b; sa = pd.s2.a;
-      // Depth by luminance — bright things further, dark closer
-      sz = (1 - pd.s2.lum) * 15;
+      sx = cv.x; sy = cv.y; sr = pd.s2.r; sg = pd.s2.g; sb = pd.s2.b; sa = pd.s2.a;
     } else {
       var s = pd.s3;
-      sx = s.x; sy = s.y; sz = 0; sr = s.r; sg = s.g; sb = s.b; sa = s.a;
+      sx = s.x; sy = s.y; sr = s.r; sg = s.g; sb = s.b; sa = s.a;
     }
 
-    // Convert normalized scene coords to world space at Z=0 plane
-    var wp = toWorld(sx, sy, sz);
+    // Convert normalized scene coords to world space
+    var wp = toWorld(sx, sy, 0);
+
+    // Scene 1: apply terrain height when camera is tilted
+    // In top-down view, particles are on the XZ plane (Y=0)
+    // When tilted, terrain height lifts particles in world Y
+    if (sceneIdx === 1 && tiltT > 0) {
+      var th = pd.s1.terrainH || 0;
+      // Remap: when top-down, particles form a flat image on XZ plane
+      // Their "y" in the image maps to world Z, their x maps to world X
+      // Height (terrainH) maps to world Y
+      var viewSize = getViewSize(CAM_Z);
+      var flatX = (sx - 0.5) * viewSize.w;
+      var flatZ = (sy - 0.5) * viewSize.h;  // image Y → world Z (depth)
+      var height = th * 80 * tiltT;  // max ~80 world units tall
+      
+      wp.x = flatX;
+      wp.y = height;
+      wp.z = -flatZ;  // negative so top of image is far, bottom is near
+    }
 
     if (fs < 0.01) {
       // Pure scene
