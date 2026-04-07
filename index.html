@@ -630,21 +630,21 @@ function animate() {
   var fs = state.fs || 0;
   var tiltT = state.tilt || 0;
 
-  // Camera: blend between top-down and perspective view
-  // Top-down: camera at (0, 500, 0) looking at (0, 0, 0) — straight down
-  // Tilted:   camera at (0, 200, 400) looking at (0, 0, 0) — ~60° angle
-  // Flock:    camera at (0, 0, 500) looking at (0, 0, 0) — straight on
-  var camTilt = tiltT;
-  if (fs > 0) camTilt = 1;  // keep tilted during transition
-
-  // During full flock, swing to front view
-  var flockCamT = 0;
-  if (fs > 0.5) flockCamT = smoothstep((fs - 0.5) * 2);
-
-  var camX = 0;
-  var camY = lerp(500, lerp(200, 0, flockCamT), camTilt);
-  var camZ = lerp(0, lerp(400, 500, flockCamT), camTilt);
-  camera.position.set(camX, camY, camZ);
+  // Camera position depends on scene
+  // Scene 1: top-down → tilted perspective (looking at a map)
+  // Scene 2/3: front view (looking at a wall)
+  var sceneIdx = state.scene || 1;
+  var camY, camZ;
+  if (sceneIdx === 1 && fs < 0.5) {
+    // Scene 1: blend top-down → tilted by tiltT
+    camY = lerp(500, 220, tiltT);
+    camZ = lerp(0.01, 380, tiltT);  // 0.01 to avoid lookAt singularity
+  } else {
+    // All other scenes + flock: front view
+    camY = 0;
+    camZ = 500;
+  }
+  camera.position.set(0, camY, camZ);
   camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
 
@@ -667,8 +667,7 @@ function animate() {
   var posArr = positions;
   var colArr = colors;
 
-  // Scene data
-  var sceneIdx = state.scene || 1;
+  // Scene data (sceneIdx already declared above for camera)
 
   var gridPx = Math.max(W, H) / (CC - 1) * 0.75;
 
@@ -694,25 +693,19 @@ function animate() {
       sx = s.x; sy = s.y; sr = s.r; sg = s.g; sb = s.b; sa = s.a;
     }
 
-    // Convert normalized scene coords to world space
-    var wp = toWorld(sx, sy, 0);
-
-    // Scene 1: apply terrain height when camera is tilted
-    // In top-down view, particles are on the XZ plane (Y=0)
-    // When tilted, terrain height lifts particles in world Y
-    if (sceneIdx === 1 && tiltT > 0) {
-      var th = pd.s1.terrainH || 0;
-      // Remap: when top-down, particles form a flat image on XZ plane
-      // Their "y" in the image maps to world Z, their x maps to world X
-      // Height (terrainH) maps to world Y
-      var viewSize = getViewSize(CAM_Z);
+    // Convert to world space — different plane per scene
+    var wp;
+    if (sceneIdx === 1) {
+      // Scene 1: chart on ground plane (XZ), terrain height in Y
+      var viewSize = getViewSize(500);
       var flatX = (sx - 0.5) * viewSize.w;
-      var flatZ = (sy - 0.5) * viewSize.h;  // image Y → world Z (depth)
-      var height = th * 80 * tiltT;  // max ~80 world units tall
-      
-      wp.x = flatX;
-      wp.y = height;
-      wp.z = -flatZ;  // negative so top of image is far, bottom is near
+      var flatZ = (sy - 0.5) * viewSize.h;
+      var th = pd.s1.terrainH || 0;
+      var height = th * 80 * tiltT;
+      wp = {x: flatX, y: height, z: -flatZ};
+    } else {
+      // Scene 2, 3: image on wall plane (XY), facing camera at Z=500
+      wp = toWorld(sx, sy, 0);
     }
 
     if (fs < 0.01) {
