@@ -1,0 +1,249 @@
+@import '@fontsource-variable/fraunces';
+@import '@fontsource-variable/inter';
+
+:root {
+  /* surfaces */
+  --bg-bone: #ffffff;
+  --bg-bone-soft: #ffffff;
+  --bg-bone-deep: #f4f4f2;
+
+  /* ink */
+  --ink: #0e1410;
+  --ink-strong: #050807;
+  --ink-mute: rgba(14, 20, 16, 0.6);
+  --ink-faint: rgba(14, 20, 16, 0.32);
+  --ink-hair: rgba(14, 20, 16, 0.1);
+
+  /* neons */
+  --accent-phosphor: #79ff00;
+  --accent-runway: #ffe600;
+  --accent-pink: #ff00aa;
+  --accent-deep: #0f1a14;
+
+  /* type */
+  --font-display: 'Fraunces Variable', 'Fraunces', 'Times New Roman', Georgia, serif;
+  --font-body: 'Inter Variable', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /* type scale */
+  --t-display: clamp(2.75rem, 1.6rem + 5.2vw, 6.5rem);
+  --t-h1: clamp(2.25rem, 1.5rem + 3vw, 4.25rem);
+  --t-h2: clamp(1.5rem, 1.15rem + 1.4vw, 2.25rem);
+  --t-h3: clamp(1.125rem, 1rem + 0.55vw, 1.5rem);
+  --t-body-lg: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  --t-body: 1rem;
+  --t-small: 0.875rem;
+  --t-micro: 0.75rem;
+
+  /* layout */
+  --measure: 62ch;
+  --page-pad: clamp(1.5rem, 4vw, 4rem);
+  --section-pad-y: clamp(5rem, 10vw, 9rem);
+  --container-max: 1280px;
+  --container-narrow: 880px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg-bone);
+  overflow-x: hidden;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent-phosphor);
+  color: var(--ink);
+}
+
+/* ----- typography ----- */
+
+.display,
+.h1,
+.h2,
+.h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1.04;
+  color: var(--ink-strong);
+  text-wrap: balance;
+}
+
+.display {
+  font-size: var(--t-display);
+  line-height: 0.98;
+  letter-spacing: -0.028em;
+}
+
+.h1 {
+  font-size: var(--t-h1);
+}
+
+.h2 {
+  font-size: var(--t-h2);
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+}
+
+.h3 {
+  font-size: var(--t-h3);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--t-micro);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.lede {
+  font-size: var(--t-body-lg);
+  line-height: 1.5;
+  color: var(--ink);
+  max-width: var(--measure);
+}
+
+.prose {
+  font-size: var(--t-body-lg);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: var(--measure);
+}
+
+.prose p + p {
+  margin-top: 1.25em;
+}
+
+.prose em {
+  font-style: italic;
+  color: var(--ink-strong);
+}
+
+.italic-emphasis {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* ----- layout primitives ----- */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--page-pad);
+}
+
+.container-narrow {
+  width: 100%;
+  max-width: var(--container-narrow);
+  margin-inline: auto;
+  padding-inline: var(--page-pad);
+}
+
+.section {
+  padding-block: var(--section-pad-y);
+}
+
+.section-soft {
+  background: var(--bg-bone-soft);
+}
+
+.hairline {
+  height: 1px;
+  background: var(--ink-hair);
+  border: 0;
+}
+
+/* ----- buttons ----- */
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: var(--accent-phosphor);
+  color: var(--ink-strong);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--t-body);
+  letter-spacing: -0.005em;
+  border: 1px solid var(--ink-strong);
+  transition: transform 200ms ease, background 200ms ease;
+}
+
+.cta:hover {
+  background: var(--accent-deep);
+  color: var(--bg-bone);
+  transform: translateY(-1px);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--accent-phosphor);
+  outline-offset: 3px;
+}
+
+.cta-ghost {
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+
+.cta-ghost:hover {
+  background: var(--ink);
+  color: var(--bg-bone);
+}
+
+/* ----- focus ring ----- */
+
+:focus-visible {
+  outline: 2px solid var(--accent-phosphor);
+  outline-offset: 2px;
+}

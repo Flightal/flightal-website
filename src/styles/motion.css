@@ -1,0 +1,84 @@
+/* Subtle motion — no animation library, no JS dependencies beyond IntersectionObserver. */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.reveal-stagger.is-visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 120ms; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 240ms; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 360ms; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 480ms; }
+
+.parallax-slow {
+  will-change: transform;
+}
+
+.flightpath-line {
+  fill: none;
+  stroke: var(--accent-phosphor);
+  stroke-width: 1;
+  opacity: 0.42;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: flightpath-draw 2600ms cubic-bezier(0.4, 0, 0.2, 1) 400ms forwards;
+}
+
+@keyframes flightpath-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.flightpath-marker {
+  fill: var(--accent-phosphor);
+  opacity: 0;
+  animation: flightpath-fade-in 600ms ease-out 2800ms forwards;
+}
+
+@keyframes flightpath-fade-in {
+  to {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-stagger > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .parallax-slow {
+    transform: none !important;
+  }
+  .flightpath-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .flightpath-marker {
+    animation: none;
+    opacity: 0.9;
+  }
+}

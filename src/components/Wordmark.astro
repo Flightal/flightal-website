@@ -1,0 +1,27 @@
+---
+interface Props {
+  inverted?: boolean;
+  height?: number;
+}
+const { inverted = false, height = 30 } = Astro.props;
+const src = inverted ? '/Flightal-white.svg' : '/Flightal.svg';
+// SVG viewBox is 331 x 95 (trimmed to glyph bounds, aspect ratio ~3.48:1)
+const width = Math.round((height * 331) / 95);
+---
+
+<a href="/" class="wordmark" aria-label="Flightal — home">
+  <img src={src} alt="Flightal" width={width} height={height} />
+</a>
+
+<style>
+  .wordmark {
+    display: inline-block;
+    line-height: 0;
+    text-decoration: none;
+  }
+  .wordmark img {
+    display: block;
+    height: auto;
+    max-width: none;
+  }
+</style>

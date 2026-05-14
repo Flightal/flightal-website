@@ -1,0 +1,76 @@
+---
+---
+
+<section class="problem section" id="problem">
+  <div class="container">
+    <div class="problem-grid">
+      <div class="problem-head reveal">
+        <h2 class="h1">
+          You're flying blind to most of what happens in your cockpit.
+        </h2>
+      </div>
+      <div class="problem-body reveal">
+        <div class="prose">
+          <p>
+            Traditional FDM tells you what the aircraft did. Thousands of
+            parameters on telemetry, configuration, trends. But it can't tell
+            you the why behind them.
+          </p>
+          <p class="problem-question">
+            Was the steep descent with spoilers deployed poor energy management,
+            or was ATC keeping them high?
+          </p>
+          <p class="problem-question">
+            Was the long landing a poorly flown approach, or a conscious
+            decision to mitigate wake turbulence?
+          </p>
+          <p>
+            Your FDM doesn't know. Reports only tell you what crew noticed and
+            remembered to report.
+          </p>
+          <p class="problem-emphasis">
+            The rest is invisible, <span class="problem-emphasis-accent">until Flightal.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .problem {
+    background: var(--bg-bone);
+  }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  @media (min-width: 880px) {
+    .problem-grid {
+      grid-template-columns: 5fr 6fr;
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+  }
+  .problem-head .h1 {
+    max-width: 18ch;
+  }
+  .problem-question {
+    padding-left: 1rem;
+    border-left: 2px solid var(--accent-phosphor);
+    color: var(--ink);
+  }
+  .problem-emphasis {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+    line-height: 1.15;
+    color: var(--ink-strong);
+    margin-top: 2rem !important;
+  }
+  .problem-emphasis-accent {
+    color: var(--accent-phosphor);
+  }
+</style>

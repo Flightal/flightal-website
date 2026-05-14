@@ -1,0 +1,143 @@
+---
+const cards = [
+  {
+    icon: 'shield',
+    title: 'Insurance',
+    body: 'Better risk profile, better terms.',
+  },
+  {
+    icon: 'gauge',
+    title: 'Maintenance',
+    body: 'Catch procedural drift before it escalates into hard landings, upsets, and AOG.',
+  },
+  {
+    icon: 'target',
+    title: 'Training',
+    body: 'Real line operational data. Train every pilot on what they actually need.',
+  },
+  {
+    icon: 'clipboard',
+    title: 'Compliance',
+    body: 'SMS that improves your business, not just ticks the compliance box.',
+  },
+];
+---
+
+<section class="value section" id="value">
+  <div class="container">
+    <header class="value-head reveal">
+      <h2 class="h1">
+        Safety doesn't make you money.<br />
+        <span class="italic-emphasis">It saves you money.</span>
+      </h2>
+    </header>
+
+    <div class="value-grid reveal-stagger">
+      {cards.map(({ icon, title, body }) => (
+        <article class="value-card">
+          <span class="value-card-icon" aria-hidden="true">
+            {icon === 'shield' && (
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4l10 3.5v8c0 6-4.5 11-10 12-5.5-1-10-6-10-12v-8z" />
+                <path d="M16 11.5v6.5" />
+                <path d="M12.5 15l3.5 3 3.5-3" />
+              </svg>
+            )}
+            {icon === 'gauge' && (
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 22a11 11 0 0 1 22 0" />
+                <path d="M6.5 12.5l1.5 1.5" />
+                <path d="M16 7.5v2" />
+                <path d="M25.5 12.5l-1.5 1.5" />
+                <path d="M16 22l7.5-5.5" stroke-width="1.6" />
+                <circle cx="16" cy="22" r="1" fill="currentColor" stroke="none" />
+                <path d="M22 22h3" stroke-width="1.2" />
+              </svg>
+            )}
+            {icon === 'target' && (
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="19" cy="16" r="9" />
+                <circle cx="19" cy="16" r="5" />
+                <circle cx="19" cy="16" r="1.2" fill="currentColor" stroke="none" />
+                <path d="M3 24c4.5 0 8-2.5 11-6" />
+                <path d="M3 24l-0 -2.5" />
+                <path d="M3 24h2.5" />
+              </svg>
+            )}
+            {icon === 'clipboard' && (
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="6" width="18" height="22" rx="1.5" />
+                <path d="M12 4h8v4h-8z" />
+                <path d="M11.5 16l3 3 6-7" />
+              </svg>
+            )}
+          </span>
+          <h3 class="h3 value-card-title">{title}</h3>
+          <p class="value-card-body">{body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .value-head {
+    margin-bottom: clamp(3rem, 6vw, 4.5rem);
+  }
+  .value-head .h1 {
+    max-width: 24ch;
+  }
+  .value-head .italic-emphasis {
+    color: var(--accent-phosphor);
+  }
+
+  .value-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 720px) {
+    .value-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+  }
+
+  .value-card {
+    position: relative;
+    padding: clamp(2rem, 3.5vw, 2.75rem) clamp(1.75rem, 3vw, 2.5rem);
+    background: #f7f5ee;
+    border: 1px solid var(--ink-hair);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: clamp(13rem, 22vw, 17rem);
+  }
+
+  .value-card-icon {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--ink-strong);
+    margin-bottom: auto;
+  }
+  .value-card-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .value-card-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1.2rem + 0.9vw, 2rem);
+    letter-spacing: -0.018em;
+    line-height: 1.05;
+    color: var(--ink-strong);
+  }
+  .value-card-body {
+    font-size: var(--t-body-lg);
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 34ch;
+  }
+</style>

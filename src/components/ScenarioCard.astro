@@ -1,0 +1,117 @@
+---
+interface Props {
+  index: string;
+  label: string;
+  accent: 'phosphor' | 'runway' | 'pink';
+  title: string;
+  fdm: string;
+  actual: string;
+}
+
+const { index, label, accent, title, fdm, actual } = Astro.props;
+---
+
+<article class:list={['scenario-card', `accent-${accent}`, 'reveal']}>
+  <header class="scenario-head">
+    <span class="scenario-index">{index}</span>
+    <span class="scenario-label">{label}</span>
+  </header>
+
+  <h3 class="h2 scenario-title">{title}</h3>
+
+  <div class="scenario-cols">
+    <div class="scenario-col">
+      <p class="scenario-col-head">What FDM saw</p>
+      <p class="scenario-col-body">{fdm}</p>
+    </div>
+    <div class="scenario-col">
+      <p class="scenario-col-head">What actually happened</p>
+      <p class="scenario-col-body">{actual}</p>
+    </div>
+  </div>
+
+  <p class="scenario-close">
+    <span class="italic-emphasis">Your current safety program saw none of this. Flightal would have captured all of it.</span>
+  </p>
+</article>
+
+<style>
+  .scenario-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: clamp(2rem, 3vw, 2.5rem) clamp(1.5rem, 2.5vw, 2rem);
+    background: var(--bg-bone);
+    border: 1px solid var(--ink-hair);
+    border-top: 2px solid var(--ink);
+    height: 100%;
+  }
+  .scenario-card.accent-phosphor { border-top-color: var(--accent-phosphor); }
+  .scenario-card.accent-runway { border-top-color: var(--accent-runway); }
+  .scenario-card.accent-pink { border-top-color: var(--accent-pink); }
+
+  .scenario-head {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .scenario-index {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+  }
+  .scenario-label {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--t-micro);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    color: var(--ink-strong);
+  }
+  .accent-phosphor .scenario-label { background: var(--accent-phosphor); }
+  .accent-runway .scenario-label { background: var(--accent-runway); }
+  .accent-pink .scenario-label { background: var(--accent-pink); color: var(--bg-bone); }
+
+  .scenario-title {
+    line-height: 1.1;
+    font-size: clamp(1.375rem, 1.05rem + 1vw, 1.875rem);
+  }
+
+  .scenario-cols {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ink-hair);
+    flex: 1;
+  }
+
+  .scenario-col-head {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--t-micro);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 0.5rem;
+  }
+  .scenario-col-body {
+    font-size: var(--t-body);
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .scenario-close {
+    color: var(--ink);
+    font-size: var(--t-small);
+    line-height: 1.55;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ink-hair);
+    margin-top: auto;
+  }
+</style>

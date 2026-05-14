@@ -1,0 +1,78 @@
+---
+import ScenarioCard from './ScenarioCard.astro';
+
+const scenarios = [
+  {
+    index: '01',
+    label: 'False positive',
+    accent: 'phosphor' as const,
+    title: 'The exceedance that wasn’t.',
+    fdm: '[placeholder — aircraft parameters trigger an exceedance flag. Safety manager opens a case. Pilot gets pulled in for an interview. Hours of investigation to determine whether it was actually a safety event.]',
+    actual: '[placeholder — the parameter trigger was a correct response to an ATC instruction or environmental condition. No safety event occurred. Investigation hours wasted, pilot trust eroded for nothing.]',
+  },
+  {
+    index: '02',
+    label: 'Automatic capture',
+    accent: 'runway' as const,
+    title: 'What your pilots are actually flying.',
+    fdm: '[placeholder — individual flights logged. No aggregated view of what types of operations each pilot is actually conducting over time. Training records show currency on paper.]',
+    actual: '[placeholder — over the past 90 days, half your captains haven’t flown a non-precision approach in real conditions. Three of them haven’t done a crosswind landing above 15 knots in six months. Your training program assumes they’re getting the exposure. The operation isn’t giving it to them.]',
+  },
+  {
+    index: '03',
+    label: 'Invisible event',
+    accent: 'pink' as const,
+    title: 'The safety event nobody noticed.',
+    fdm: '[placeholder — nothing flagged. Parameters within normal range. Routine flight.]',
+    actual: '[placeholder — a real safety-relevant event occurred. The crew didn’t notice, or noticed and didn’t think it was worth reporting. No harm, no foul, no record. The same crew flying the same approach in worse conditions is a different outcome.]',
+  },
+];
+---
+
+<section class="scenarios section" id="scenarios">
+  <div class="container">
+    <header class="scenarios-head reveal">
+      <h2 class="h1">Three things your current safety program isn't telling you.</h2>
+    </header>
+
+    <div class="scenarios-grid">
+      {scenarios.map((s) => <ScenarioCard {...s} />)}
+    </div>
+
+    <p class="scenarios-close reveal">
+      Flightal catches <span class="italic-emphasis">all of them.</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .scenarios-head {
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .scenarios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 980px) {
+    .scenarios-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(1.25rem, 2vw, 1.75rem);
+      align-items: stretch;
+    }
+  }
+
+  .scenarios-close {
+    margin-top: clamp(3rem, 6vw, 5rem);
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.625rem, 1.2rem + 1.6vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.018em;
+    color: var(--ink-strong);
+  }
+  .scenarios-close .italic-emphasis {
+    color: var(--accent-phosphor);
+  }
+</style>

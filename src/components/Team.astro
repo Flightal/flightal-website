@@ -1,0 +1,115 @@
+---
+const members = [
+  {
+    name: 'Robert Andersson',
+    role: 'Founder & CEO',
+    bio: 'Commercial pilot (CPL/IR/ME), repeat founder with two exits.',
+    image: '/images/team/robert.svg',
+    initial: 'R',
+  },
+  {
+    name: 'Patrik Sjöberg',
+    role: 'Flight Operations',
+    bio: '13,000 flight hours, 737 captain, former Saab chief instructor.',
+    image: '/images/team/patrik.svg',
+    initial: 'P',
+  },
+  {
+    name: 'Carl Westin',
+    role: 'Human Factors Advisor',
+    bio: 'PhD candidate at Linköping University, active 737 captain, researching Human-AI teaming.',
+    image: '/images/team/carl.svg',
+    initial: 'C',
+  },
+];
+---
+
+<section class="team section" id="team">
+  <div class="container">
+    <header class="team-head reveal">
+      <h2 class="h1">
+        Built by pilots, <span class="italic-emphasis">with pilots.</span>
+      </h2>
+    </header>
+
+    <div class="team-grid reveal-stagger">
+      {members.map(({ name, role, bio, image }) => (
+        <article class="team-card">
+          <div class="team-portrait">
+            <img src={image} alt={`Portrait of ${name}`} width="600" height="800" loading="lazy" decoding="async" />
+          </div>
+          <div class="team-meta">
+            <h3 class="h3 team-name">{name}</h3>
+            <p class="team-role">{role}</p>
+            <p class="team-bio">{bio}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .team-head {
+    margin-bottom: clamp(3rem, 6vw, 4.5rem);
+  }
+  .team-head .h1 {
+    max-width: 24ch;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  @media (min-width: 720px) {
+    .team-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(1.5rem, 3vw, 2.5rem);
+    }
+  }
+
+  .team-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .team-portrait {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--bg-bone-deep);
+  }
+  .team-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.12) contrast(1.02);
+  }
+
+  .team-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: -0.014em;
+    color: var(--ink-strong);
+  }
+
+  .team-role {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--t-micro);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 0.25rem;
+  }
+
+  .team-bio {
+    font-size: var(--t-body);
+    line-height: 1.55;
+    color: var(--ink);
+    margin-top: 0.5rem;
+    max-width: 36ch;
+  }
+</style>

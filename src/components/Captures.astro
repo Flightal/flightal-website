@@ -1,0 +1,188 @@
+---
+const items = [
+  {
+    label: 'ATC communications and clearances',
+    icon: 'radio',
+  },
+  {
+    label: 'Procedure and checklist adherence',
+    icon: 'checklist',
+  },
+  {
+    label: 'Crew communication and CRM patterns',
+    icon: 'crew',
+  },
+  {
+    label: 'Workload and stress indicators',
+    icon: 'workload',
+  },
+  {
+    label: 'Decision points and crew responses',
+    icon: 'decision',
+  },
+];
+---
+
+<section class="captures section" id="captures">
+  <div class="captures-bg" aria-hidden="true">
+    <img
+      class="parallax-slow"
+      src="/images/negative-space-cockpit.jpg"
+      alt=""
+      width="2400"
+      height="1594"
+      loading="lazy"
+      decoding="async"
+    />
+    <div class="captures-bg-tint"></div>
+  </div>
+
+  <div class="container-narrow captures-inner">
+    <header class="captures-head reveal">
+      <h2 class="h1">The operational context FDM can't see.</h2>
+    </header>
+
+    <ul class="captures-list reveal-stagger" role="list">
+      {items.map(({ label, icon }) => (
+        <li class="captures-item">
+          <span class="captures-icon" aria-hidden="true">
+            {icon === 'radio' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M3 14c2-4 5-6 9-6s7 2 9 6" />
+                <path d="M7 16c1-2 3-3 5-3s4 1 5 3" />
+                <circle cx="12" cy="19" r="1.2" fill="currentColor" />
+              </svg>
+            )}
+            {icon === 'checklist' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M5 7l2 2 4-4" />
+                <path d="M5 14l2 2 4-4" />
+                <path d="M13 8h7" />
+                <path d="M13 15h7" />
+              </svg>
+            )}
+            {icon === 'crew' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <circle cx="8" cy="9" r="3" />
+                <circle cx="16" cy="9" r="3" />
+                <path d="M3 19c0-3 2-5 5-5s5 2 5 5" />
+                <path d="M11 19c0-3 2-5 5-5s5 2 5 5" />
+              </svg>
+            )}
+            {icon === 'workload' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <path d="M3 17l4-6 3 4 4-9 4 7 3-3" />
+              </svg>
+            )}
+            {icon === 'decision' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                <circle cx="6" cy="12" r="2" />
+                <circle cx="18" cy="6" r="2" />
+                <circle cx="18" cy="18" r="2" />
+                <path d="M8 12l8-6" />
+                <path d="M8 12l8 6" />
+              </svg>
+            )}
+          </span>
+          <span class="captures-label">{label}</span>
+        </li>
+      ))}
+    </ul>
+
+    <p class="captures-close reveal">
+      Every flight. <span class="italic-emphasis">Automatically.</span> No pilot reporting, no observer required.
+    </p>
+  </div>
+</section>
+
+<style>
+  .captures {
+    position: relative;
+    background: #060808;
+    color: var(--bg-bone);
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .captures-bg {
+    position: absolute;
+    inset: -8% 0 -8% 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .captures-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 38%;
+    filter: brightness(0.55) contrast(1.05) saturate(0.85);
+  }
+  .captures-bg-tint {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(6, 8, 8, 0.35) 0%, rgba(6, 8, 8, 0.55) 55%, rgba(6, 8, 8, 0.82) 100%),
+      linear-gradient(180deg, rgba(6, 8, 8, 0.5) 0%, rgba(6, 8, 8, 0.2) 25%, rgba(6, 8, 8, 0.4) 80%, rgba(6, 8, 8, 0.7) 100%);
+  }
+
+  .captures-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .captures-head {
+    margin-bottom: clamp(3rem, 6vw, 4.5rem);
+  }
+  .captures-head .h1 {
+    max-width: 20ch;
+    color: var(--bg-bone);
+  }
+
+  .captures-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 clamp(3rem, 6vw, 4.5rem);
+    border-top: 1px solid rgba(242, 239, 232, 0.16);
+  }
+  .captures-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(242, 239, 232, 0.16);
+    font-size: var(--t-body-lg);
+    color: var(--bg-bone);
+  }
+  .captures-icon {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    color: var(--accent-phosphor);
+  }
+  .captures-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+  .captures-label {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.125rem, 0.95rem + 0.6vw, 1.4rem);
+    letter-spacing: -0.012em;
+    color: var(--bg-bone);
+  }
+
+  .captures-close {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.25rem);
+    line-height: 1.2;
+    letter-spacing: -0.016em;
+    color: var(--bg-bone);
+    max-width: 28ch;
+  }
+  .captures-close .italic-emphasis {
+    color: var(--accent-phosphor);
+  }
+</style>

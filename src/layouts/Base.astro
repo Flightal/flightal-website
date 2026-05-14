@@ -1,0 +1,109 @@
+---
+import '../styles/global.css';
+import '../styles/motion.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = 'Flightal — Operational visibility on every flight',
+  description = 'FDM tells you what happened. Flightal tells you why. Complete operational visibility on every flight.',
+  ogImage = '/og-image.jpg',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://flightal.com').toString();
+const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://flightal.com').toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flightal" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content={canonical} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              io.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+      );
+
+      for (const el of document.querySelectorAll('.reveal, .reveal-stagger')) {
+        io.observe(el);
+      }
+
+      const parallaxEls = document.querySelectorAll<HTMLElement>('.parallax-slow');
+      if (parallaxEls.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        let ticking = false;
+        const update = () => {
+          const vh = window.innerHeight;
+          for (const el of parallaxEls) {
+            // Walk the offset-parent chain to find this element's center in
+            // document coords. offsetTop is layout-based and unaffected by
+            // transforms, so this is safe to recompute each frame.
+            let docCenter = el.offsetHeight / 2;
+            let cursor: HTMLElement | null = el;
+            while (cursor) {
+              docCenter += cursor.offsetTop;
+              cursor = cursor.offsetParent as HTMLElement | null;
+            }
+            // Translation goes through zero when the element is centered in
+            // the viewport, so the parallax effect is local to each section
+            // rather than runaway-scaling with absolute scroll depth.
+            const delta = window.scrollY + vh / 2 - docCenter;
+            el.style.transform = `translate3d(0, ${delta * -0.08}px, 0)`;
+          }
+          ticking = false;
+        };
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (!ticking) {
+              requestAnimationFrame(update);
+              ticking = true;
+            }
+          },
+          { passive: true }
+        );
+        window.addEventListener('load', update);
+        update();
+      }
+    </script>
+  </body>
+</html>

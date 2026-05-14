@@ -1,0 +1,72 @@
+---
+import Wordmark from './Wordmark.astro';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <hr class="hairline" />
+    <div class="footer-row">
+      <div class="footer-brand">
+        <Wordmark />
+        <p class="footer-tagline">Operational visibility, every flight.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="mailto:robert@flightal.com">robert@flightal.com</a>
+        <a href="https://www.linkedin.com/company/flightal" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+      <p class="footer-copy">© {year} Flightal AB</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 2.5rem 3rem;
+    background: var(--bg-bone);
+    color: var(--ink);
+  }
+  .footer-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-top: 2rem;
+    align-items: start;
+  }
+  @media (min-width: 720px) {
+    .footer-row {
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+  }
+  .footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .footer-tagline {
+    font-size: var(--t-small);
+    color: var(--ink-mute);
+  }
+  .footer-nav {
+    display: flex;
+    gap: 1.5rem;
+    font-size: var(--t-small);
+    color: var(--ink-mute);
+  }
+  .footer-nav a {
+    transition: color 200ms ease;
+  }
+  .footer-nav a:hover {
+    color: var(--ink-strong);
+  }
+  .footer-copy {
+    font-size: var(--t-small);
+    color: var(--ink-mute);
+  }
+  @media (min-width: 720px) {
+    .footer-copy {
+      text-align: right;
+    }
+  }
+</style>
