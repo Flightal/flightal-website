@@ -5,6 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Opt JavaScript actions into the Node 24 runtime ahead of GitHub's
+# 2026-06-02 default switch — quiets the Node 20 deprecation warning
+# from actions/checkout, actions/setup-node, and FTP-Deploy-Action.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 # Serialize deploys on the same ref — prevents two pushes in quick
 # succession from racing each other to the FTP server.
 concurrency:
