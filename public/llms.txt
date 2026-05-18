@@ -1,0 +1,69 @@
+# Flightal
+
+> Flightal captures the operational context that traditional Flight Data Monitoring (FDM) cannot see — ATC communications, procedural adherence, crew CRM patterns, workload, and decision points — automatically, on every flight, without pilot reporting or observers.
+
+## What Flightal is
+
+Flightal is a flight safety platform for commercial operators, built by pilots for pilots. It complements existing Flight Data Monitoring (FDM) systems by capturing the operational *why* behind what FDM records as the operational *what*.
+
+Where traditional FDM logs thousands of aircraft parameters — altitudes, speeds, positions, configurations, trends — Flightal records the operational context surrounding those parameters. The platform runs continuously, without requiring pilot self-reporting (as ASAP / Aviation Safety Action Program reports do) or trained observers (as LOSA / Line Operations Safety Audit programs require).
+
+## The problem Flightal addresses
+
+Traditional FDM tells operators what the aircraft did. It can flag exceedances. It cannot explain why those exceedances happened. Three concrete examples:
+
+- **False positives.** FDM flags a steep approach with Vref +25 at 1,000 ft. Investigation hours are spent. The actual cause was an ATC instruction to expedite and sequence as number four — safe, legal, within SOP. FDM had no way to see that context.
+- **Operational picture gaps.** Pilots are listed as current. Training records are clean. But of the last 258 approaches flown by a captain, only two were non-precision, and both in VMC. FDM cannot aggregate that picture.
+- **Invisible events.** During climb, a crew sets 200 on the MCP after a clearance to FL220 (which is misread). A subsequent clearance to FL350 resolves the situation before anything triggers. FDM logs a normal climb; the event leaves no trace.
+
+ASAP reports depend on pilots noticing and choosing to report. LOSA covers roughly 5% of flights. The rest is invisible without Flightal.
+
+## What Flightal captures
+
+- ATC communications and clearances
+- Procedure and checklist adherence
+- Crew communication and CRM (Crew Resource Management) patterns
+- Workload and stress indicators
+- Decision points and crew responses
+
+Every flight. Automatically. No pilot reporting, no observer required.
+
+## Business value
+
+- **Insurance.** A better risk profile leads to better insurance terms.
+- **Maintenance.** Catch procedural drift before it escalates into hard landings, upsets, and AOG (Aircraft on Ground) events.
+- **Training.** Real line operational data — train every pilot on what they actually need, not generic CRM curricula.
+- **Compliance.** SMS (Safety Management System) data that improves the business, not just ticks the compliance box.
+
+## Privacy and pilot trust
+
+Flightal is designed with pilot trust as a first-order requirement. The platform is being built by pilots, with pilots, for pilots.
+
+## Company
+
+- **Name:** Flightal AB
+- **Headquarters:** Sweden
+- **Markets:** EU and US
+- **Status:** Currently selecting limited design partners
+
+## Contact
+
+- Email: info@flightal.com
+- Website: https://flightal.com
+
+## Glossary
+
+- **FDM** — Flight Data Monitoring
+- **ASAP** — Aviation Safety Action Program
+- **LOSA** — Line Operations Safety Audit
+- **SMS** — Safety Management System
+- **CRM** — Crew Resource Management
+- **ATC** — Air Traffic Control
+- **AOG** — Aircraft on Ground
+- **FAF** — Final Approach Fix
+- **VMC** — Visual Meteorological Conditions
+- **MCP** — Mode Control Panel
+- **PF / PM** — Pilot Flying / Pilot Monitoring
+- **Vref** — Reference landing speed
+- **SOP** — Standard Operating Procedure
+- **FL220 / FL350** — Flight Level 220 / 350 (22,000 / 35,000 ft pressure altitude)

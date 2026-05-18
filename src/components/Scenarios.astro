@@ -7,24 +7,27 @@ const scenarios = [
     label: 'False positive',
     accent: 'phosphor' as const,
     title: 'The exceedance that wasn’t.',
-    fdm: '[placeholder — aircraft parameters trigger an exceedance flag. Safety manager opens a case. Pilot gets pulled in for an interview. Hours of investigation to determine whether it was actually a safety event.]',
-    actual: '[placeholder — the parameter trigger was a correct response to an ATC instruction or environmental condition. No safety event occurred. Investigation hours wasted, pilot trust eroded for nothing.]',
+    fdm: 'Tight turn to final, expedited descent, late configuration. Vref +25 at 1,000 ft.',
+    actual:
+      'ATC offered the option: take a tight squeeze in for a visual approach, or sequence as number four. Crew opted to expedite. Vectors inside the FAF, fully configured and stabilised at 700 ft. Safe, legal, within SOP.',
   },
   {
     index: '02',
     label: 'Automatic capture',
     accent: 'runway' as const,
     title: 'What your pilots are actually flying.',
-    fdm: '[placeholder — individual flights logged. No aggregated view of what types of operations each pilot is actually conducting over time. Training records show currency on paper.]',
-    actual: '[placeholder — over the past 90 days, half your captains haven’t flown a non-precision approach in real conditions. Three of them haven’t done a crosswind landing above 15 knots in six months. Your training program assumes they’re getting the exposure. The operation isn’t giving it to them.]',
+    fdm: 'Both pilots current. Last recurrent four months ago. Training records clean.',
+    actual:
+      'Of the last 258 approaches flown by the PF, two were non-precision. Both in VMC.',
   },
   {
     index: '03',
     label: 'Invisible event',
     accent: 'pink' as const,
     title: 'The safety event nobody noticed.',
-    fdm: '[placeholder — nothing flagged. Parameters within normal range. Routine flight.]',
-    actual: '[placeholder — a real safety-relevant event occurred. The crew didn’t notice, or noticed and didn’t think it was worth reporting. No harm, no foul, no record. The same crew flying the same approach in worse conditions is a different outcome.]',
+    fdm: 'Normal climb, no events.',
+    actual:
+      'On climb, crew heads-down discussing weather deviation strategy. Cleared to FL220. Readback correct. PF sets 200 on the MCP. PM doesn’t catch it. Before reaching FL200, a new clearance to FL350 resolves it.',
   },
 ];
 ---
@@ -32,16 +35,37 @@ const scenarios = [
 <section class="scenarios section" id="scenarios">
   <div class="container">
     <header class="scenarios-head reveal">
-      <h2 class="h1">Three things your current safety program isn't telling you.</h2>
+      <h2 class="section-title">Three things your current safety program isn't telling you.</h2>
     </header>
+  </div>
 
-    <div class="scenarios-grid">
-      {scenarios.map((s) => <ScenarioCard {...s} />)}
+  {/* Horizontal sticky-stack. Section is N viewport-heights tall; the inner
+     stage stays pinned for the duration. Vertical scroll progress drives
+     which card is "active" (expanded), the others compress to spines. The
+     section closer lives *inside* the sticky region so it always sits at
+     the bottom of the viewport while the cards are pinned — finishes the
+     statement the open-bottomed cards begin. Below the desktop breakpoint
+     we fall back to a plain vertical stack. */}
+  <div class="scenarios-track" data-scenarios-track style={`--card-count: ${scenarios.length};`}>
+    <div class="scenarios-sticky">
+      <div class="container scenarios-stage" data-scenarios-stage>
+        {scenarios.map((s, i) => (
+          <div class:list={['scenarios-slot', { 'is-active': i === 0 }]} data-scenario-slot={i}>
+            <ScenarioCard {...s} />
+            <button type="button" class="scenarios-spine" data-spine-index={i} aria-label={`Show scenario ${s.index} — ${s.label}`}>
+              <span class="scenarios-spine-index">{s.index}</span>
+              <span class="scenarios-spine-label">{s.label}</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div class="container scenarios-bottom">
+        <p class="scenarios-close section-close">
+          Flightal catches <span class="italic-emphasis">all of them.</span>
+        </p>
+      </div>
     </div>
-
-    <p class="scenarios-close reveal">
-      Flightal catches <span class="italic-emphasis">all of them.</span>
-    </p>
   </div>
 </section>
 
@@ -49,30 +73,279 @@ const scenarios = [
   .scenarios-head {
     margin-bottom: clamp(2.5rem, 5vw, 4rem);
   }
-  .scenarios-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+
+  /* ----- Mobile / sub-desktop fallback: plain vertical stack ----- */
+  .scenarios-track {
+    display: flex;
+    flex-direction: column;
+    /* Between the stack of cards and the section closer — matches the
+       `margin-bottom` pattern other section heads use, so the
+       cards→subtitle gap here reads the same as section-head→content
+       elsewhere. (Card-to-card spacing is governed by .scenarios-stage's
+       own internal gap, separate from this.) */
+    gap: clamp(3rem, 6vw, 4.5rem);
+  }
+  .scenarios-sticky {
+    display: contents;
+  }
+  .scenarios-stage {
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
   }
+  .scenarios-slot {
+    position: relative;
+    width: 100%;
+  }
+  .scenarios-spine {
+    /* Hidden on mobile — only used in the desktop sticky-stack layout. */
+    display: none;
+  }
+
+  /* ----- Wide viewport, no sticky-stack: three cards side-by-side ----- */
+  /* This is the original pre-sticky layout. Used when the viewport is wide
+     enough for a horizontal row but not tall enough for the sticky-stack
+     to pin comfortably. All cards visible at their natural content height,
+     no active-state animation. */
   @media (min-width: 980px) {
-    .scenarios-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: clamp(1.25rem, 2vw, 1.75rem);
+    .scenarios-stage {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(1rem, 2vw, 1.75rem);
       align-items: stretch;
     }
   }
 
-  .scenarios-close {
-    margin-top: clamp(3rem, 6vw, 5rem);
+  /* ----- Desktop sticky-stack — only when there's vertical room ----- */
+  /* When the viewport is also tall enough (≥700px), the sticky-stack
+     engages: the inner stage pins, cards expand horizontally one at a
+     time as you scroll. Below 700px the rules above remain — three
+     visible cards in a static row. */
+  @media (min-width: 980px) and (min-height: 700px) {
+    .scenarios-track {
+      /* Tighter scroll budget — section is (N − 0.5) viewports tall, so
+         scrollable range inside the stuck stage is (N − 1.5) × vh and each
+         card holds the stage for roughly half a viewport's scroll. */
+      height: calc((var(--card-count) - 0.5) * 100vh);
+      display: block;
+      gap: 0;
+    }
+    .scenarios-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      /* Simple grid: stage (constant height), subtitle (natural), and a
+         1fr filler row that absorbs the rest. On taller viewports the
+         filler grows, giving the layout breathing room without growing
+         the cards themselves. Row gap matches the `margin-bottom` used
+         on section headers elsewhere on the page. */
+      display: grid;
+      grid-template-rows: 540px auto 1fr;
+      row-gap: clamp(3rem, 6vw, 4.5rem);
+      padding-top: clamp(2rem, 5vw, 4rem);
+    }
+    .scenarios-stage {
+      /* `--card-w` matches the active slot width exactly so the card
+         contents are laid out at the final size from the start; the slot
+         animates around them via overflow:hidden, so text never reflows
+         mid-transition.
+
+         Stage is a fixed height sized to fit the longest card's content
+         — same height for every active state so slots + spines stay
+         aligned (shorter cards just have whitespace at the bottom). */
+      --gap: clamp(0.5rem, 1vw, 1rem);
+      --card-w: calc((min(100vw, 1280px) - 2 * var(--page-pad) - 2 * var(--gap)) * 0.8);
+      display: flex;
+      flex-direction: row;
+      gap: var(--gap);
+      align-items: stretch;
+      width: 100%;
+      height: 540px;
+    }
+    /* No additional padding here — the grid row-gap above and the 1fr
+       filler row below already handle spacing in the sticky layout. */
+    .scenarios-slot {
+      /* Active slot gets 8/10 of available stage width; the two inactive
+         slots split the remaining 2/10. Cards inside are absolute-positioned
+         at the fixed `--card-w` so the layout inside the card never changes. */
+      flex: 1 1 0;
+      min-width: 0;
+      transition: flex-grow 700ms cubic-bezier(0.22, 0.7, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+    }
+    .scenarios-slot.is-active {
+      flex-grow: 8;
+    }
+    .scenarios-slot:not(.is-active) {
+      flex-grow: 1;
+    }
+
+    /* Active card fills its slot exactly — same height as the spines, so
+       all three slots end at the same y-coordinate. Width stays fixed at
+       --card-w so text doesn't reflow as the slot's flex-grow animates. */
+    .scenarios-slot :global(.scenario-card) {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--card-w);
+      height: 100%;
+      transition: opacity 500ms ease, visibility 500ms ease;
+    }
+    .scenarios-slot:not(.is-active) :global(.scenario-card) {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* The "spine" — a click target with the index + label set vertically
+       (CW rotation, US/UK book-spine convention: tilt head right to read).
+       Matches the card's bone background with the thick accent rail on top. */
+    .scenarios-spine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      width: 100%;
+      height: 100%;
+      padding: 1.25rem 0.5rem;
+      background: var(--bg-bone);
+      border: 1px solid var(--ink-hair);
+      border-top: 6px solid var(--ink);
+      cursor: pointer;
+      position: absolute;
+      inset: 0;
+      transition: opacity 400ms ease;
+      font-family: inherit;
+      color: var(--ink-strong);
+    }
+    .scenarios-slot.is-active .scenarios-spine {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .scenarios-slot:not(.is-active) .scenarios-spine {
+      opacity: 1;
+    }
+    .scenarios-slot[data-scenario-slot='0'] .scenarios-spine { border-top-color: var(--accent-phosphor); }
+    .scenarios-slot[data-scenario-slot='1'] .scenarios-spine { border-top-color: var(--accent-runway); }
+    .scenarios-slot[data-scenario-slot='2'] .scenarios-spine { border-top-color: var(--accent-pink); }
+
+    .scenarios-spine-index {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--ink-mute);
+      letter-spacing: 0.06em;
+    }
+    .scenarios-spine-label {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: var(--t-micro);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: inherit;
+      writing-mode: vertical-rl;
+      white-space: nowrap;
+    }
+  }
+
+  .scenarios-bottom {
     text-align: center;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(1.625rem, 1.2rem + 1.6vw, 2.75rem);
-    line-height: 1.1;
-    letter-spacing: -0.018em;
+  }
+  .scenarios-close {
     color: var(--ink-strong);
+    margin: 0;
   }
   .scenarios-close .italic-emphasis {
     color: var(--accent-phosphor);
   }
 </style>
+
+<script>
+  // Vertical scroll progress through .scenarios-track → which slot is active.
+  // Only runs above the desktop breakpoint (the CSS already gates the layout).
+  // Sticky-stack only engages when the viewport is wide AND tall enough
+  // (matches the CSS media query). Wide-but-short falls back to the
+  // 3-card static row; mobile falls back to the vertical stack.
+  const MQ = '(min-width: 980px) and (min-height: 700px)';
+
+  function init() {
+    const track = document.querySelector<HTMLElement>('[data-scenarios-track]');
+    if (!track) return;
+    const slots = Array.from(
+      track.querySelectorAll<HTMLElement>('[data-scenario-slot]'),
+    );
+    if (slots.length === 0) return;
+
+    const setActive = (idx: number) => {
+      for (let i = 0; i < slots.length; i++) {
+        slots[i].classList.toggle('is-active', i === idx);
+      }
+    };
+
+    let mqActive = matchMedia(MQ).matches;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      if (!mqActive) {
+        // Sub-desktop fallback: all slots are "active" (the vertical stack
+        // just shows every card open).
+        for (const s of slots) s.classList.add('is-active');
+        return;
+      }
+      const rect = track.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrollRange = rect.height - vh;
+      if (scrollRange <= 0) return;
+      const scrolled = Math.min(scrollRange, Math.max(0, -rect.top));
+      const progress = scrolled / scrollRange; // 0 → 1 through the section
+      // Map progress onto N slots; the 0.5 head-room from the CSS height
+      // means the first slot stays active for ~half a viewport before
+      // handing over to the next.
+      const N = slots.length;
+      const stage = Math.min(N - 1, Math.floor(progress * N));
+      setActive(stage);
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    // React to viewport crossing the breakpoint so we don't get stuck in
+    // mobile-mode classes after a resize.
+    const mql = matchMedia(MQ);
+    const onMQ = () => {
+      mqActive = mql.matches;
+      update();
+    };
+    mql.addEventListener('change', onMQ);
+
+    // Click on a spine jumps the page scroll so that spine's slot is active.
+    for (const slot of slots) {
+      const spine = slot.querySelector<HTMLButtonElement>('[data-spine-index]');
+      if (!spine) continue;
+      spine.addEventListener('click', () => {
+        const idx = parseInt(spine.dataset.spineIndex ?? '0', 10);
+        const rect = track.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const scrollRange = rect.height - vh;
+        const targetProgress = (idx + 0.5) / slots.length;
+        const targetScroll = window.scrollY + rect.top + scrollRange * targetProgress;
+        window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      });
+    }
+
+    update();
+  }
+
+  init();
+</script>

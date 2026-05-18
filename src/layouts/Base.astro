@@ -32,6 +32,15 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://flightal.com').toStri
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    {/* LCP image — preloaded so the browser can start fetching before
+        the stylesheet parses and discovers it. */}
+    <link
+      rel="preload"
+      as="image"
+      href="/images/hermes-pink.jpg"
+      fetchpriority="high"
+    />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Flightal" />
     <meta property="og:title" content={title} />
@@ -47,6 +56,89 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://flightal.com').toStri
     <meta name="twitter:image" content={ogImageUrl} />
 
     <meta name="generator" content={Astro.generator} />
+
+    {/* Structured data. Helps Google + LLMs build the entity graph for
+        Flightal AB — founders, product, and website cross-linked by @id. */}
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Person',
+          '@id': 'https://flightal.com/#robert',
+          name: 'Robert Andersson',
+          jobTitle: 'Founder & CEO',
+          worksFor: { '@id': 'https://flightal.com/#organization' },
+          description:
+            'Commercial pilot (CPL/IR/ME). Repeat founder with two exits.',
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://flightal.com/#patrik',
+          name: 'Patrik Sjöberg',
+          jobTitle: 'Flight Operations',
+          worksFor: { '@id': 'https://flightal.com/#organization' },
+          description:
+            '13,000 flight hours. 737 captain. Former Saab chief instructor.',
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://flightal.com/#carl',
+          name: 'Carl Westin',
+          jobTitle: 'Human Factors Advisor',
+          worksFor: { '@id': 'https://flightal.com/#organization' },
+          description:
+            'PhD candidate at Linköping University, researching Human-AI teaming. Active 737 captain.',
+          affiliation: {
+            '@type': 'CollegeOrUniversity',
+            name: 'Linköping University',
+          },
+        },
+        {
+          '@type': 'Organization',
+          '@id': 'https://flightal.com/#organization',
+          name: 'Flightal AB',
+          alternateName: 'Flightal',
+          url: 'https://flightal.com',
+          logo: 'https://flightal.com/Flightal.svg',
+          email: 'info@flightal.com',
+          description:
+            'Flight safety platform that captures the operational context behind cockpit events — ATC communications, procedural adherence, crew CRM patterns, workload, and decision points — automatically, on every flight.',
+          foundingLocation: { '@type': 'Place', name: 'Sweden' },
+          areaServed: ['EU', 'US'],
+          sameAs: ['https://www.linkedin.com/company/flightal'],
+          founder: { '@id': 'https://flightal.com/#robert' },
+          employee: [
+            { '@id': 'https://flightal.com/#robert' },
+            { '@id': 'https://flightal.com/#patrik' },
+            { '@id': 'https://flightal.com/#carl' },
+          ],
+        },
+        {
+          '@type': 'WebSite',
+          '@id': 'https://flightal.com/#website',
+          url: 'https://flightal.com',
+          name: 'Flightal',
+          description,
+          publisher: { '@id': 'https://flightal.com/#organization' },
+          inLanguage: 'en',
+        },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': 'https://flightal.com/#product',
+          name: 'Flightal',
+          applicationCategory: 'BusinessApplication',
+          applicationSubCategory: 'Aviation Safety',
+          operatingSystem: 'On-device, cockpit-integrated',
+          description:
+            'Operational visibility on every flight. Captures ATC communications, procedure and checklist adherence, crew CRM patterns, workload and stress indicators, and decision points — without pilot reporting or observers.',
+          publisher: { '@id': 'https://flightal.com/#organization' },
+          audience: {
+            '@type': 'Audience',
+            audienceType: 'Commercial aviation operators in the EU and US',
+          },
+        },
+      ],
+    })} />
   </head>
   <body>
     <slot />

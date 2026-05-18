@@ -1,12 +1,20 @@
 ---
 import FlightPath from './FlightPath.astro';
-import HermesParticles from './HermesParticles.astro';
 import Wordmark from './Wordmark.astro';
 ---
 
 <section class="hero">
   <div class="hero-bg">
-    <HermesParticles />
+    <img
+      class="parallax-slow"
+      src="/images/hermes-pink.jpg"
+      alt=""
+      width="1672"
+      height="941"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
     <div class="hero-bg-tint"></div>
   </div>
 
@@ -17,8 +25,7 @@ import Wordmark from './Wordmark.astro';
     <nav class="hero-nav-links">
       <a href="#problem">Problem</a>
       <a href="#captures">Capabilities</a>
-      <a href="#team">Team</a>
-      <a href="#contact" class="hero-nav-cta">Book a conversation</a>
+      <a href="mailto:info@flightal.com?subject=Website%3A%20Interest%20in%20flight%20safety" class="hero-nav-cta">Book a conversation</a>
     </nav>
   </header>
 
@@ -29,14 +36,10 @@ import Wordmark from './Wordmark.astro';
     </h1>
     <p class="hero-subhead">Complete operational visibility on every flight.</p>
     <div class="hero-cta-row">
-      <a href="#contact" class="cta">Book a conversation</a>
+      <a href="mailto:info@flightal.com?subject=Website%3A%20Interest%20in%20flight%20safety" class="cta">Book a conversation</a>
     </div>
   </div>
 
-  <div class="hero-scroll" aria-hidden="true">
-    <span class="hero-scroll-label">Scroll</span>
-    <span class="hero-scroll-line"></span>
-  </div>
 </section>
 
 <style>
@@ -144,27 +147,4 @@ import Wordmark from './Wordmark.astro';
     gap: 1rem;
   }
 
-  .hero-scroll {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(242, 239, 232, 0.6);
-    font-size: var(--t-micro);
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-  }
-  .hero-scroll-line {
-    width: 1px;
-    height: 36px;
-    background: linear-gradient(180deg, rgba(242, 239, 232, 0.6), transparent);
-  }
-  @media (max-width: 720px) {
-    .hero-scroll { display: none; }
-  }
 </style>

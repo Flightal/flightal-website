@@ -5,7 +5,7 @@
   <div class="container">
     <div class="problem-grid">
       <div class="problem-head reveal">
-        <h2 class="h1">
+        <h2 class="section-title">
           You're flying blind to most of what happens in your cockpit.
         </h2>
       </div>
@@ -26,14 +26,15 @@
           </p>
           <p>
             Your FDM doesn't know. Reports only tell you what crew notice and
-            remember
-          </p>
-          <p class="problem-emphasis">
-            The rest is invisible, <span class="problem-emphasis-accent">until Flightal.</span>
+            remember.
           </p>
         </div>
       </div>
     </div>
+
+    <p class="problem-close section-close reveal">
+      You already have the data. <span class="problem-emphasis-accent">Flightal gives it context.</span>
+    </p>
   </div>
 </section>
 
@@ -53,7 +54,7 @@
       gap: clamp(3rem, 6vw, 6rem);
     }
   }
-  .problem-head .h1 {
+  .problem-head .section-title {
     max-width: 18ch;
   }
   .problem-question {
@@ -61,14 +62,13 @@
     border-left: 2px solid var(--accent-phosphor);
     color: var(--ink);
   }
-  .problem-emphasis {
-    font-family: var(--font-display);
+  /* Closer sits full-width below the grid, centered — matches the pattern
+     used by the Scenarios and DesignPartners sections. */
+  .problem-close {
+    text-align: center;
     font-style: italic;
-    font-weight: 500;
-    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
-    line-height: 1.15;
     color: var(--ink-strong);
-    margin-top: 2rem !important;
+    margin-top: clamp(3rem, 6vw, 4.5rem);
   }
   .problem-emphasis-accent {
     color: var(--accent-phosphor);

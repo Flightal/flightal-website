@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# AI/LLM training crawlers — we welcome citation. See /llms.txt for a
+# machine-friendly summary of what Flightal is.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://flightal.com/sitemap.xml

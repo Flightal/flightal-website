@@ -9,6 +9,21 @@ interface Props {
 }
 
 const { index, label, accent, title, fdm, actual } = Astro.props;
+
+/**
+ * Wrap V-speed subscripts (e.g. "Vref", "V1", "V2", "Vne") in a styled
+ * <sub> so the trailing identifier renders subscripted + bold italic.
+ *
+ * Matches uppercase V followed by 1–4 lowercase letters OR 1–3 digits at
+ * a word boundary — that excludes acronyms like "VMC" (uppercase) and
+ * unrelated text starting with V.
+ */
+function fmtAviation(text: string): string {
+  return text.replace(
+    /\bV([a-z]{1,4}|\d{1,3})\b/g,
+    'V<sub class="vspeed-sub">$1</sub>',
+  );
+}
 ---
 
 <article class:list={['scenario-card', `accent-${accent}`, 'reveal']}>
@@ -17,22 +32,18 @@ const { index, label, accent, title, fdm, actual } = Astro.props;
     <span class="scenario-label">{label}</span>
   </header>
 
-  <h3 class="h2 scenario-title">{title}</h3>
+  <h3 class="h3 scenario-title">{title}</h3>
 
   <div class="scenario-cols">
     <div class="scenario-col">
       <p class="scenario-col-head">What FDM saw</p>
-      <p class="scenario-col-body">{fdm}</p>
+      <p class="scenario-col-body" set:html={fmtAviation(fdm)}></p>
     </div>
     <div class="scenario-col">
       <p class="scenario-col-head">What actually happened</p>
-      <p class="scenario-col-body">{actual}</p>
+      <p class="scenario-col-body" set:html={fmtAviation(actual)}></p>
     </div>
   </div>
-
-  <p class="scenario-close">
-    <span class="italic-emphasis">Your current safety program saw none of this. Flightal would have captured all of it.</span>
-  </p>
 </article>
 
 <style>
@@ -44,8 +55,8 @@ const { index, label, accent, title, fdm, actual } = Astro.props;
     padding: clamp(2rem, 3vw, 2.5rem) clamp(1.5rem, 2.5vw, 2rem);
     background: var(--bg-bone);
     border: 1px solid var(--ink-hair);
-    border-top: 2px solid var(--ink);
-    height: 100%;
+    /* Thicker accent rail at the top — the card's main accent moment. */
+    border-top: 6px solid var(--ink);
   }
   .scenario-card.accent-phosphor { border-top-color: var(--accent-phosphor); }
   .scenario-card.accent-runway { border-top-color: var(--accent-runway); }
@@ -79,7 +90,6 @@ const { index, label, accent, title, fdm, actual } = Astro.props;
 
   .scenario-title {
     line-height: 1.1;
-    font-size: clamp(1.375rem, 1.05rem + 1vw, 1.875rem);
   }
 
   .scenario-cols {
@@ -105,13 +115,9 @@ const { index, label, accent, title, fdm, actual } = Astro.props;
     line-height: 1.55;
     color: var(--ink);
   }
-
-  .scenario-close {
-    color: var(--ink);
-    font-size: var(--t-small);
-    line-height: 1.55;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--ink-hair);
-    margin-top: auto;
+  .scenario-col-body :global(.vspeed-sub) {
+    font-style: italic;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 </style>

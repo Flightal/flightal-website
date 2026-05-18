@@ -1,0 +1,149 @@
+---
+const items = [
+  'Your input shapes how the product evolves',
+  'Customized setup, dashboards, and reports to improve your operation',
+  'World-class support and engagement',
+];
+---
+
+<section class="partners section" id="contact">
+  <div class="container">
+    <div class="partners-grid">
+      <header class="partners-head reveal">
+        <h2 class="section-title partners-headline">
+          Interested in the next era of flight safety?
+        </h2>
+      </header>
+
+      <div class="partners-body reveal">
+        <p class="partners-lede">
+          We are now selecting design partners. Help us shape the platform
+          from the inside. Built around your insights. Your priorities. Your
+          operation.
+        </p>
+
+        <div class="partners-list">
+          <p class="partners-list-head">If you're selected</p>
+          <ul role="list">
+            {items.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="partners-footer reveal">
+      <p class="partners-limit section-close">
+        Limited slots for operators in the EU and US.
+      </p>
+      <a
+        href="mailto:info@flightal.com?subject=Website%3A%20Interest%20in%20flight%20safety"
+        class="cta"
+      >
+        Book a 30-minute conversation
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .partners {
+    background: var(--bg-bone);
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: start;
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  @media (min-width: 880px) {
+    .partners-grid {
+      grid-template-columns: 5fr 6fr;
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+  }
+
+  .partners-headline {
+    max-width: 14ch;
+    color: var(--ink-strong);
+  }
+
+  .partners-body {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  .partners-lede {
+    font-size: var(--t-body-lg);
+    line-height: 1.55;
+    color: var(--ink);
+    max-width: 56ch;
+    margin: 0;
+  }
+
+  .partners-list {
+    max-width: 46ch;
+  }
+  .partners-list-head {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--t-micro);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--ink-hair);
+  }
+  .partners-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .partners-list li {
+    position: relative;
+    padding: 0.95rem 0 0.95rem 1.6rem;
+    border-bottom: 1px solid var(--ink-hair);
+    font-size: var(--t-body);
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .partners-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1.4rem;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-phosphor);
+  }
+
+  .partners-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  }
+
+  .partners-limit {
+    font-style: italic;
+    color: var(--ink-strong);
+    margin: 0 0 clamp(0.5rem, 1.5vw, 1rem);
+  }
+
+  .partners-email {
+    font-size: var(--t-small);
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .partners-email a:hover {
+    color: var(--ink-strong);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--accent-phosphor);
+    text-decoration-thickness: 2px;
+  }
+</style>

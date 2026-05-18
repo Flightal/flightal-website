@@ -100,7 +100,7 @@ button {
 /* ----- typography ----- */
 
 .display,
-.h1,
+.section-title,
 .h2,
 .h3 {
   font-family: var(--font-display);
@@ -117,7 +117,10 @@ button {
   letter-spacing: -0.028em;
 }
 
-.h1 {
+/* Section heading — applied to the <h2> element that opens each section.
+   Named for its role (rather than `.h1`) since the elements themselves are
+   not <h1>; that one is reserved for the hero. */
+.section-title {
   font-size: var(--t-h1);
 }
 
@@ -129,7 +132,6 @@ button {
 
 .h3 {
   font-size: var(--t-h3);
-  font-weight: 600;
   letter-spacing: -0.012em;
   line-height: 1.2;
 }
@@ -148,6 +150,17 @@ button {
   line-height: 1.5;
   color: var(--ink);
   max-width: var(--measure);
+}
+
+/* Shared "section closer" punch line. Sized at ~h1 ÷ φ so the closer always
+   sits one golden step below its section heading. Sections that need to be
+   italic / centered / inverted-color override locally. */
+.section-close {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.016em;
 }
 
 .prose {
