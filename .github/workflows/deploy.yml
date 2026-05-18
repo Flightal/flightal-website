@@ -5,9 +5,21 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Serialize deploys on the same ref — prevents two pushes in quick
+# succession from racing each other to the FTP server.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+# Least privilege — this workflow only needs to read the repo.
+permissions:
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # Kills a stuck FTP upload rather than burning the full 6-hour default.
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -35,5 +47,7 @@ jobs:
           local-dir: ./dist/
           protocol: ftps
           port: 21
-          dangerous-clean-slate: false
+          # Mirror dist/ to the server — wipes any orphaned files from
+          # the previous deploy so the live tree exactly matches the build.
+          dangerous-clean-slate: true
           log-level: standard
