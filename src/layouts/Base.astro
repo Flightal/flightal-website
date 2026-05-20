@@ -57,6 +57,14 @@ const ogImageUrl = new URL(ogImage, Astro.site ?? 'https://flightal.com').toStri
 
     <meta name="generator" content={Astro.generator} />
 
+    {/* Umami analytics — privacy-friendly, no cookies, EU-hosted. */}
+    <script
+      is:inline
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="76ccca8c-024c-4ff1-a005-7dd577f2d2de"
+    ></script>
+
     {/* Structured data. Helps Google + LLMs build the entity graph for
         Flightal AB — founders, product, and website cross-linked by @id. */}
     <script type="application/ld+json" set:html={JSON.stringify({
